@@ -74,10 +74,8 @@ async def load_extensions():
 
 async def main():
     async with bot:
-        with open('token.json','r',encoding='utf8') as token:
-            token = json.load(token)
         await load_extensions()
-        await bot.start(token['discord']['Token'])
+        await bot.start(jdata['discord']['Token2'])
 
 if __name__ == "__main__":
     asyncio.run(main())
