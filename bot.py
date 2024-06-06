@@ -1,4 +1,6 @@
 import json,asyncio,discord,datetime,os
+
+from cogs.games import *
 from discord.ext import commands,tasks
 from discord import app_commands
 
@@ -12,16 +14,21 @@ bot = commands.Bot(command_prefix = ("!","0","?"),intents=intents)
 
 @bot.event
 async def on_ready():
+    try:
+        money = Money(bot)
 
-    with open('setting.json','w',encoding='utf8') as tmp:
-        json.dump(jdata,tmp,indent=4,ensure_ascii=False)
+        with open('setting.json','w',encoding='utf8') as tmp:
+            json.dump(jdata,tmp,indent=4,ensure_ascii=False)
 
-    await bot.fetch_guild(int(jdata["guild_id"]))
-    await bot.tree.sync()
-    print(">>Bot is online<<")
-    print('Client ID:', bot.user.id)
-    print('Client Name:', bot.user.name)
+        await money.initialize_money_records()
 
+        print("syncing...")
+        await bot.tree.sync()
+        print(">>Bot is online<<")
+        print('Client ID:', bot.user.id)
+        print('Client Name:', bot.user.name)
+    except Exception as e:
+        print(e,", on ready")
 
 
 @bot.hybrid_command()
@@ -75,7 +82,9 @@ async def load_extensions():
 async def main():
     async with bot:
         await load_extensions()
-        await bot.start(jdata['discord']['Token2'])
+        with open('token.json','r',encoding='utf8') as t:
+            token = json.load(t)
+        await bot.start(token['discord']['Token'])
 
 if __name__ == "__main__":
     asyncio.run(main())
