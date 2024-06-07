@@ -4,6 +4,7 @@ import os
 import random
 import math
 
+from cogs.money import Money
 from discord import app_commands
 from discord.ext import commands
 
@@ -22,47 +23,7 @@ def json_write(path:str, file):
     except Exception as e:
         print(e,", json_w")
 
-class Money(commands.Cog):
-    def __init__(self, bot:commands.Bot):
-        self.bot = bot
-
-    async def initialize_money_records(self):
-        try:
-            json_file_path = 'money_records.json'
-
-            if not os.path.exists(json_file_path):
-                data = {"money": {}}
-                with open(json_file_path, 'w', encoding='utf8') as f:
-                    json.dump(data, f, indent=4, ensure_ascii=False)
-            else:
-                with open(json_file_path, 'r', encoding='utf8') as f:
-                    data = json.load(f)
-
-            async for guild in self.bot.fetch_guilds(limit=None):
-                guild: discord.Guild = await self.bot.fetch_guild(guild.id)
-                if str(guild.id) not in data["money"]:
-                    data["money"][money_guild(guild)] = {}
-                with open(json_file_path, 'w', encoding='utf8') as f:
-                    json.dump(data, f, indent=4, ensure_ascii=False)
-                guild = self.bot.get_guild(guild.id)
-                for member in guild.members:
-                    if not member.bot:
-                        user_id = str(member.id)
-                        if user_id not in data["money"][money_guild(guild)]:
-                            data["money"][money_guild(guild)][user_id] = 0
-
-            with open(json_file_path, 'w', encoding='utf8') as f:
-                json.dump(data, f, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(e,", money")
-
-    def money_add(count: int, guild, user: int):
-        with open("money_records.json","r",encoding="utf8") as m:
-            m_data = json.load(m)
-        money = m_data["money"][money_guild(guild)][str(user)]
-        money += count
-        m_data["money"][money_guild(guild)][str(user)] = money
-        json_write("money_records.json",m_data)
+    
 
 class TwoAOneB(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -142,9 +103,8 @@ class TwoAOneB(commands.Cog):
             # Check for win or loss conditions
             if a == game_instance["length"] and b == 0:
                 await interaction.channel.send("恭喜！你猜對了數字！")
-                money = round(pow(100*game_instance["attempts_left"]+1,math.log(game_instance["length"])))
-                print(money)
-                Money.money_add(money,interaction.guild,interaction.user.id)
+                money = round(1000*pow(game_instance["attempts_left"]+1,math.log(game_instance["length"])))
+                Money.money_add(Money,money,interaction.guild,interaction.user.id)
                 del self.active_games[user_id]  # Remove game from active games
     
             elif game_instance["attempts_left"] == 0:

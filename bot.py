@@ -15,12 +15,10 @@ bot = commands.Bot(command_prefix = ("!","0","?"),intents=intents)
 @bot.event
 async def on_ready():
     try:
-        money = Money(bot)
-
         with open('setting.json','w',encoding='utf8') as tmp:
             json.dump(jdata,tmp,indent=4,ensure_ascii=False)
-
-        await money.initialize_money_records()
+        print("setting money")
+        await Money(bot).initialize_money_records()
 
         print("syncing...")
         await bot.tree.sync()
@@ -35,7 +33,7 @@ async def on_ready():
 async def sync(ctx:commands.Context):
     await ctx.send('Syncing...')
     await bot.tree.sync()
-    await ctx.send("Synced")
+    await ctx.channel.send("Synced")
 
 @bot.hybrid_command()
 @commands.is_owner()
