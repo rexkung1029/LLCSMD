@@ -34,6 +34,7 @@ MANIFEST
 #others
 token.json
 arangement.json
+money_records.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
