@@ -1,4 +1,3 @@
-import json
 import discord
 import re
 import asyncio
@@ -56,8 +55,6 @@ class Youtube(commands.Cog):
     async def _play(self, ctx: commands.Context, link):
         try:
             # 確認是否能播放
-        
-
             loop = asyncio.get_event_loop()
             await ctx.channel.send("正在載入")
             data = await loop.run_in_executor(None, lambda: self.ytdl.extract_info(link, download=False))
