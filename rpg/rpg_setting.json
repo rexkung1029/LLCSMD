@@ -1,1 +1,59 @@
-{}
+{
+    "monsters": {
+        "Goblin": 0.49,
+        "Troll": 0.25,
+        "Ogre": 0.2,
+        "Werewolf": 0.1,
+        "Dragon": 0.01
+    },
+    "events": {
+        "monster": 0.5,
+        "treasure chest": 0.3,
+        "special_room": 0.15,
+        "stairs": 0.05
+    },
+    "events_msg": {
+        "monster": "You encountered a monster!",
+        "treasure chest": "You found a treasure chest!",
+        "special_room": "You encountered a special room!",
+        "stairs": "You found stairs leading to the next floor!"
+    },
+    "monsters_params": {
+        "Goblin": {
+            "attack": 10,
+            "defense": 5,
+            "health": 20,
+            "experience": 15
+        },
+        "Troll": {
+            "attack": 20,
+            "defense": 15,
+            "health": 50,
+            "experience": 30
+        },
+        "Ogre": {
+            "attack": 30,
+            "defense": 20,
+            "health": 80,
+            "experience": 50
+        },
+        "Werewolf": {
+            "attack": 40,
+            "defense": 10,
+            "health": 40,
+            "experience": 100
+        },
+        "Dragon": {
+            "attack": 100,
+            "defense": 500,
+            "health": 150,
+            "experience": 200
+        }
+    },
+    "treasure_contents": {
+        "Health Potion": 0.3,
+        "Weapon": 0.2,
+        "Armor": 0.2,
+        "Money": 0.3
+    }
+}
