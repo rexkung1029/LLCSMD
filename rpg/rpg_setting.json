@@ -23,31 +23,36 @@
             "attack": 10,
             "defense": 5,
             "health": 20,
-            "experience": 15
+            "experience": 15,
+            "agility": 30
         },
         "Troll": {
             "attack": 20,
             "defense": 15,
             "health": 50,
-            "experience": 30
+            "experience": 30,
+            "agility": 5
         },
         "Ogre": {
             "attack": 30,
             "defense": 20,
             "health": 80,
-            "experience": 50
+            "experience": 50,
+            "agility": 5
         },
         "Werewolf": {
             "attack": 40,
             "defense": 10,
             "health": 40,
-            "experience": 100
+            "experience": 100,
+            "agility": 20
         },
         "Dragon": {
             "attack": 100,
             "defense": 500,
             "health": 150,
-            "experience": 200
+            "experience": 200,
+            "agility": 0
         }
     },
     "treasure_contents": {
@@ -55,5 +60,31 @@
         "Weapon": 0.2,
         "Armor": 0.2,
         "Money": 0.3
+    },
+    "occupation_default_params": {
+        "warrior": {
+            "attack": 15,
+            "defense": 15,
+            "health": 120,
+            "magic": 50,
+            "agility": 10,
+            "magic_resistance": 5
+        },
+        "archer": {
+            "attack": 12,
+            "defense": 10,
+            "health": 100,
+            "magic": 70,
+            "agility": 20,
+            "magic_resistance": 5
+        },
+        "mage": {
+            "attack": 10,
+            "defense": 10,
+            "health": 70,
+            "magic": 150,
+            "agility": 0,
+            "magic_resistance": 10
+        }
     }
 }

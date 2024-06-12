@@ -4,13 +4,13 @@ import math
 import json
 import numpy
 
+from rpg.util import util
 from discord.ext import commands, tasks
 from discord import app_commands
 from discord.app_commands import Choice
 
 j_stats_p = "rpg/rpg_stats.json"
 j_setting_p = "rpg/rpg_setting.json"
-exploring = []
 
 with open(j_stats_p, "r", encoding="utf8") as tmp:
     rpg_stats = json.load(tmp)
@@ -20,7 +20,6 @@ with open(j_setting_p, "r", encoding="utf8") as tmp:
 
 class common():
 
-    @staticmethod
     def json_write(path: str, file):
         try:
             with open(path, 'w', encoding='utf8') as tmp:
@@ -29,20 +28,18 @@ class common():
             print(e, ", json_w")
 
 
-    @staticmethod
     def player_detail(interaction: discord.Interaction) -> dict:
-        pd = rpg_stats[str(interaction.guild_id)][str(interaction.user.id)]
-        return pd
+        try:
+            guild_stats = rpg_stats.get(str(interaction.guild_id), None)
+            if guild_stats is None:
+                return None
+            return guild_stats.get(str(interaction.user.id), None)
+        except Exception as e:
+            print(e, ", player detail")
+            return None
 
 
-    @staticmethod
-    def bonus(player: dict):
-        depth = player["depth"] - 1
-        return 1.0 + (depth * 0.05)
-    
-    @staticmethod
-    def experience_required(level):
-        return math.ceil(100 * (1.1 ** level))
+
 
 
 class rpg_main(commands.Cog):
@@ -67,43 +64,112 @@ class rpg_main(commands.Cog):
             Choice(name="Start", value="start"),
             Choice(name="Explore", value="explore"),
             Choice(name="View Inventory", value="inventory"),
-            Choice(name="View Status",value="status")
+            Choice(name="View Status",value="status"),
+            Choice(name="VIew Attack Skills", value="attack_skills"),
+            Choice(name="VIew Skills", value="skills")
         ]
     )
     async def rpg(self, interaction: discord.Interaction, opt: str = "explore"):
-        try:
-            player_detail = common.player_detail(interaction)
-            if opt == "start":
-                if str(interaction.guild_id) not in rpg_stats:
-                    rpg_stats[str(interaction.guild_id)] = {}
-                    common.json_write(j_stats_p, rpg_stats)
+        print(opt)
+        if str(interaction.guild_id) not in rpg_stats:
+            rpg_stats[str(interaction.guild_id)] = {}
+            common.json_write(j_stats_p, rpg_stats)
 
+        if opt == "start":
+            try:
                 if str(interaction.user.id) not in rpg_stats[str(interaction.guild_id)]:
-                    rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
-                        "name": interaction.user.nick or interaction.user.name,
-                        "level": 1,
-                        "inventory": {},
-                        "skills": {},
-                        "experience": 0,
-                        "attack": 10,
-                        "health": 100,
-                        "defense": 10,
-                        "depth": 1,
-                        "money": 50
-                    }
-                    common.json_write(j_stats_p, rpg_stats)
-                    await interaction.response.send_message("Character created successfully", ephemeral=True)
+                    class OccupationSelectionView(discord.ui.View):
+
+                        @discord.ui.button(label="Warrior", style=discord.ButtonStyle.primary)
+                        async def select_warrior(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
+                                "name": interaction.user.nick or interaction.user.name,
+                                "level": 1,
+                                "inventory": {},
+                                "skills": {},
+                                "attack_skills": {},
+                                "experience": 0,
+                                "attack": 15,
+                                "defense": 15,
+                                "health": 120,
+                                "magic": 50,
+                                "agility":0,
+                                "magic_resistance": 5,
+                                "depth": 1,
+                                "money": 50,
+                                "occupation":"warior"
+                            }
+                            common.json_write(j_stats_p, rpg_stats)
+                            await interaction.response.send_message("Warrior character created successfully", ephemeral=True)
+
+                        @discord.ui.button(label="Mage", style=discord.ButtonStyle.primary)
+                        async def select_mage(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
+                                "name": interaction.user.nick or interaction.user.name,
+                                "level": 1,
+                                "inventory": {},
+                                "skills": {},
+                                "attack_skills": {},
+                                "experience": 0,
+                                "attack": 10,
+                                "defense": 10,
+                                "health": 70,
+                                "magic": 120,
+                                "agility":0,
+                                "magic_resistance": 10,
+                                "depth": 1,
+                                "money": 50,
+                                "occupation":"mage"
+                            }
+                            common.json_write(j_stats_p, rpg_stats)
+                            await interaction.response.send_message("Mage character created successfully", ephemeral=True)
+
+                        @discord.ui.button(label="Archer", style=discord.ButtonStyle.primary)
+                        async def select_archer(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
+                                "name": interaction.user.nick or interaction.user.name,
+                                "level": 1,
+                                "inventory": {},
+                                "skills": {},
+                                "attack_skills": {},
+                                "experience": 0,
+                                "attack": 12,
+                                "defense": 10,
+                                "health": 100,
+                                "magic": 70,
+                                "agility": 20,
+                                "magic_resistance": 8,
+                                "depth": 1,
+                                "money": 50,
+                                "occupation": "archer"
+                            }
+                            common.json_write(j_stats_p, rpg_stats)
+                            await interaction.response.send_message("Archer character created successfully", ephemeral=True)
+
+                    await interaction.response.send_message("Please choose an occupation:", view=OccupationSelectionView(), ephemeral=True)
                 else:
                     await interaction.response.send_message("You already have a character", ephemeral=True)
+            except Exception as e:
+                print(e,", start")
 
-            elif opt == "explore":
-                if interaction.user.id not in exploring:
-                    await interaction.response.send_message("Start exploring", ephemeral=True)
-                else:
-                    await interaction.response.send_message("Continue exploring", ephemeral=True)
+        else:
+            try:
+                if str(interaction.user.id) not in rpg_stats[str(interaction.guild_id)]:
+                    await interaction.response.send_message("You don't have a character.")
+                    return
+                player_detail = common.player_detail(interaction)
+            except Exception as e:
+                print(e,",rpg")
+
+        if opt == "explore":
+            try:
+                await interaction.response.send_message("Start exploring", ephemeral=True)
                 await self.new_event(interaction)
-        
-            elif opt == "inventory":
+            except Exception as e:
+                print(e,", explore")
+    
+        elif opt == "inventory":
+            try:
                 inventory = player_detail.get("inventory", {})
                 embed = discord.Embed(title="Inventory Items", color=discord.Color.blue())
 
@@ -111,29 +177,87 @@ class rpg_main(commands.Cog):
                     embed.add_field(name=item, value=f"Quantity: {quantity}", inline=False)
 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
+            except Exception as e:
+                print(e,", inventory")
 
-            elif opt == "status":        
+        elif opt == "status":       
+            try:
                 player_status = player_detail.copy()
                 del player_status["inventory"]
                 del player_status["skills"]
+                del player_status["attack_skills"]
 
                 embed = discord.Embed(title="Player Status", color=discord.Color.green())
 
                 for key, value in player_status.items():
-                    embed.add_field(name=key.capitalize(), value=value, inline=False)
+                    if key == "experience":
+                        m = util.experience_required(player_detail["level"])
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}({round((int(value)/m)*100)}%)", inline=False)
+                    
+                    elif key == "attack":
+                        m = util.params_maximum(player_status,key)
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
+
+                    elif key == "defense" :
+                        m = util.params_maximum(player_status,key)
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
+
+                    elif key == "health":
+                        m = util.params_maximum(player_status,key)
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False) 
+
+                    elif key == "magic":
+                        m = util.params_maximum(player_status,key)
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)  
+
+                    elif key == "agility":
+                        m = util.params_maximum(player_status,key)
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
+
+                    elif key == "magic_resistance": 
+                        m = util.params_maximum(player_status,key)
+                        embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
+
+                    else:
+                        embed.add_field(name=key.capitalize(), value=value, inline=False)
 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
+            except Exception as e:
+                print(e,", status")
 
-            while player_detail["experience"] >= common.experience_required(player_detail["level"]):
+        elif opt == "attack_skills":
+            try:
+                attack_skills = player_detail["attack_skills"]
+                embed = discord.Embed(title="Player Attack Skills", color=discord.Color.blue())
+                if attack_skills is None:
+                    interaction.response.send_message("You do not have any attack skills.")
+                else:
+                    for name, level in attack_skills:
+                        embed.add_field(name=name,value=level,inline=False)
+                    await interaction.response.send_message(embed=embed,ephemeral=True)
+            except Exception as e:
+                print(e,", attack skills")
+
+        elif opt == "skills":
+            try:
+                skills = player_detail["skills"]
+                embed = discord.Embed(title="Player Skills", color=discord.Color.blue())
+                if skills is None:
+                    interaction.response.send_message("You do not have any skills.")
+                else:
+                    for name, level in skills:
+                        embed.add_field(name=name,value=level,inline=False)
+                    await interaction.response.send_message(embed=embed,ephemeral=True)
+            except Exception as e:
+                print(e,", skills")
+
+        while player_detail["experience"] >= util.experience_required(player_detail["level"]):
                 # Check if the player has enough experience to level up
-                player_detail["experience"] -= common.experience_required(player_detail["level"])  # Deduct the required experience for the next level
+                player_detail["experience"] -= util.experience_required(player_detail["level"])  # Deduct the required experience for the next level
                 player_detail["level"] += 1  # Increment the player's level
                 common.json_write(j_stats_p, rpg_stats)  # Update player data in the JSON file
                 await interaction.followup.send(f"Congratulations! You have reached level {player_detail['level']}!")  # Notify the player of level up
 
-
-        except Exception as e:
-            print(e, ", rpg")
 
 
     # -----事件----------事件----------事件----------事件-----
@@ -152,7 +276,7 @@ class rpg_main(commands.Cog):
                     damage_status = rpg_main.fight(rpg_main, player_detail, monster_detail)
                     if damage_status[1] <= 0:
                         player_detail["heealth"] = damage_status[0]
-                        exp_gain = monster_detail["experience"] * common.bonus(player_detail)
+                        exp_gain = monster_detail["experience"] * util.bonus(player_detail)
                         money_gain = exp_gain * 2
                         player_detail["experience"] += exp_gain
                         player_detail["money"] += money_gain
@@ -181,7 +305,7 @@ class rpg_main(commands.Cog):
                 heal = round(numpy.random.normal(25,5))
                 if heal < 1: heal = 1
                 elif heal > 50: heal = 50
-                heal = round(heal * common.bonus(player_detail))
+                heal = round(heal * util.bonus(player_detail))
                 player_detail["health"] = min(player_detail["health"] + heal, 100 + player_detail["level"] * 15)
                 await interaction.followup.send(f"You obtained a Health Potion, restoring {heal} health points!", ephemeral=True)
             
@@ -195,7 +319,7 @@ class rpg_main(commands.Cog):
             
             elif content == "Money":
                 money = round(numpy.random.normal(50,20))
-                money = round(money * common.bonus(player_detail))
+                money = round(money * util.bonus(player_detail))
                 player_detail["money"] += money
                 await interaction.followup.send(f"You obtained {money} copper coins!", ephemeral=True)
             
@@ -264,7 +388,7 @@ class rpg_main(commands.Cog):
 
     def fight(self, player: dict, monster: dict) -> list:  # [player left hp, monster left hp]
         try:
-            player_hp, monster_hp = player["health"], monster["health"] * common.bonus(player)
+            player_hp, monster_hp = player["health"], monster["health"] * util.bonus(player)
             player_attack = player["attack"]
             monster_attack = monster["attack"]
             player_defend = player["defense"]

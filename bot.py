@@ -59,6 +59,12 @@ async def reload(ctx:commands.Context, extension):
     await bot.reload_extension(f"cogs.{extension}")
     await ctx.send(f"ReLoaded {extension} done.")
 
+@bot.hybrid_command()
+@commands.is_owner()
+async def reload_rpg(ctx:commands.Context):
+    await bot.reload_extension("rpg.rpg_main")
+    await ctx.send("Reload RPG done.")
+
 
 @bot.hybrid_command()   
 @commands.is_owner()  
