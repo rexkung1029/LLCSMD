@@ -4,42 +4,24 @@ import math
 import json
 import numpy
 
+import rpg.rpg_merchant as merchant
+
 from rpg.util import util
 from discord.ext import commands, tasks
 from discord import app_commands
 from discord.app_commands import Choice
 
-j_stats_p = "rpg/rpg_stats.json"
+j_stats_p = "rpg/rpg_stats.json"    
 j_setting_p = "rpg/rpg_setting.json"
 
+rpg_stats = {}
+rpg_setting={}
+
 with open(j_stats_p, "r", encoding="utf8") as tmp:
-    rpg_stats = json.load(tmp)
+    rpg_stats:dict = json.load(tmp)
 
 with open(j_setting_p, "r", encoding="utf8") as tmp:
     rpg_setting = json.load(tmp)
-
-class common():
-
-    def json_write(path: str, file):
-        try:
-            with open(path, 'w', encoding='utf8') as tmp:
-                json.dump(file, tmp, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(e, ", json_w")
-
-
-    def player_detail(interaction: discord.Interaction) -> dict:
-        try:
-            guild_stats = rpg_stats.get(str(interaction.guild_id), None)
-            if guild_stats is None:
-                return None
-            return guild_stats.get(str(interaction.user.id), None)
-        except Exception as e:
-            print(e, ", player detail")
-            return None
-
-
-
 
 
 class rpg_main(commands.Cog):
@@ -50,6 +32,7 @@ class rpg_main(commands.Cog):
         self.events_msg = rpg_setting["events_msg"]
         self.monsters_params = rpg_setting["monsters_params"]
         self.treasure_contents = rpg_setting["treasure_contents"]
+        self.special_rooms = rpg_setting["special_rooms"]
         self.event_functions = {
             "monster": self.event_monster,
             "treasure chest": self.event_treasure_chest,
@@ -70,21 +53,25 @@ class rpg_main(commands.Cog):
         ]
     )
     async def rpg(self, interaction: discord.Interaction, opt: str = "explore"):
+        rpg_stats:dict = util.json_read(j_stats_p)
         print(opt)
-        if str(interaction.guild_id) not in rpg_stats:
-            rpg_stats[str(interaction.guild_id)] = {}
-            common.json_write(j_stats_p, rpg_stats)
-
+        try:
+            if str(interaction.guild_id) not in rpg_stats:
+                rpg_stats[str(interaction.guild_id)] = {}
+                util.json_write(j_stats_p, rpg_stats)
+            rpg_stats = util.json_read(j_stats_p)
+        except Exception as e:
+            print(e,", setup")
         if opt == "start":
             try:
                 if str(interaction.user.id) not in rpg_stats[str(interaction.guild_id)]:
                     class OccupationSelectionView(discord.ui.View):
-
                         @discord.ui.button(label="Warrior", style=discord.ButtonStyle.primary)
                         async def select_warrior(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            rpg_stats:dict = util.json_read(j_stats_p)
                             rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
                                 "name": interaction.user.nick or interaction.user.name,
-                                "level": 1,
+                                "level": 0,
                                 "inventory": {},
                                 "skills": {},
                                 "attack_skills": {},
@@ -97,16 +84,18 @@ class rpg_main(commands.Cog):
                                 "magic_resistance": 5,
                                 "depth": 1,
                                 "money": 50,
-                                "occupation":"warior"
+                                "occupation":"warrior"
                             }
-                            common.json_write(j_stats_p, rpg_stats)
+                            util.json_write(j_stats_p, rpg_stats)
+                            rpg_stats = util.json_read(j_stats_p)
                             await interaction.response.send_message("Warrior character created successfully", ephemeral=True)
 
                         @discord.ui.button(label="Mage", style=discord.ButtonStyle.primary)
                         async def select_mage(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            rpg_stats:dict = util.json_read(j_stats_p)
                             rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
                                 "name": interaction.user.nick or interaction.user.name,
-                                "level": 1,
+                                "level": 0,
                                 "inventory": {},
                                 "skills": {},
                                 "attack_skills": {},
@@ -121,14 +110,16 @@ class rpg_main(commands.Cog):
                                 "money": 50,
                                 "occupation":"mage"
                             }
-                            common.json_write(j_stats_p, rpg_stats)
+                            util.json_write(j_stats_p, rpg_stats)
+                            rpg_stats = util.json_read(j_stats_p)
                             await interaction.response.send_message("Mage character created successfully", ephemeral=True)
 
                         @discord.ui.button(label="Archer", style=discord.ButtonStyle.primary)
                         async def select_archer(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            rpg_stats:dict = util.json_read(j_stats_p)
                             rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
                                 "name": interaction.user.nick or interaction.user.name,
-                                "level": 1,
+                                "level": 0,
                                 "inventory": {},
                                 "skills": {},
                                 "attack_skills": {},
@@ -143,7 +134,8 @@ class rpg_main(commands.Cog):
                                 "money": 50,
                                 "occupation": "archer"
                             }
-                            common.json_write(j_stats_p, rpg_stats)
+                            util.json_write(j_stats_p, rpg_stats)
+                            rpg_stats = util.json_read(j_stats_p)
                             await interaction.response.send_message("Archer character created successfully", ephemeral=True)
 
                     await interaction.response.send_message("Please choose an occupation:", view=OccupationSelectionView(), ephemeral=True)
@@ -157,7 +149,7 @@ class rpg_main(commands.Cog):
                 if str(interaction.user.id) not in rpg_stats[str(interaction.guild_id)]:
                     await interaction.response.send_message("You don't have a character.")
                     return
-                player_detail = common.player_detail(interaction)
+                player_detail = util.player_detail(interaction,rpg_stats)
             except Exception as e:
                 print(e,",rpg")
 
@@ -170,6 +162,7 @@ class rpg_main(commands.Cog):
     
         elif opt == "inventory":
             try:
+                player_detail = util.player_detail(interaction,rpg_stats)
                 inventory = player_detail.get("inventory", {})
                 embed = discord.Embed(title="Inventory Items", color=discord.Color.blue())
 
@@ -182,6 +175,8 @@ class rpg_main(commands.Cog):
 
         elif opt == "status":       
             try:
+                rpg_stats = util.json_read(j_stats_p)
+                player_detail = util.player_detail(interaction,rpg_stats)
                 player_status = player_detail.copy()
                 del player_status["inventory"]
                 del player_status["skills"]
@@ -227,6 +222,8 @@ class rpg_main(commands.Cog):
 
         elif opt == "attack_skills":
             try:
+                rpg_stats = util.json_read(j_stats_p)
+                player_detail = util.player_detail(interaction,rpg_stats)
                 attack_skills = player_detail["attack_skills"]
                 embed = discord.Embed(title="Player Attack Skills", color=discord.Color.blue())
                 if attack_skills is None:
@@ -240,6 +237,7 @@ class rpg_main(commands.Cog):
 
         elif opt == "skills":
             try:
+                player_detail = util.player_detail(interaction,rpg_stats)
                 skills = player_detail["skills"]
                 embed = discord.Embed(title="Player Skills", color=discord.Color.blue())
                 if skills is None:
@@ -250,20 +248,16 @@ class rpg_main(commands.Cog):
                     await interaction.response.send_message(embed=embed,ephemeral=True)
             except Exception as e:
                 print(e,", skills")
-
-        while player_detail["experience"] >= util.experience_required(player_detail["level"]):
-                # Check if the player has enough experience to level up
-                player_detail["experience"] -= util.experience_required(player_detail["level"])  # Deduct the required experience for the next level
-                player_detail["level"] += 1  # Increment the player's level
-                common.json_write(j_stats_p, rpg_stats)  # Update player data in the JSON file
-                await interaction.followup.send(f"Congratulations! You have reached level {player_detail['level']}!")  # Notify the player of level up
-
-
+        
+        player_detail = util.player_detail(interaction,rpg_stats)
+        [player_detail["level"],player_detail["experience"]] = util.level_up(player_detail)
+        util.json_write(j_stats_p,rpg_stats)
 
     # -----事件----------事件----------事件----------事件-----
     async def event_monster(self, interaction: discord.Interaction):
         monster = self.generate_random_event(self.monsters)
-        player_detail = common.player_detail(interaction)
+        rpg_stats = util.json_read(j_stats_p)
+        player_detail = util.player_detail(interaction,rpg_stats)
         monster_detail = self.monsters_params[monster]
         
         class FightView(discord.ui.View):
@@ -272,6 +266,7 @@ class rpg_main(commands.Cog):
 
             @discord.ui.button(label="Fight", style=discord.ButtonStyle.danger)
             async def fight_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+                rpg_stats:dict = util.json_read(j_stats_p)
                 try:
                     damage_status = rpg_main.fight(rpg_main, player_detail, monster_detail)
                     if damage_status[1] <= 0:
@@ -281,7 +276,8 @@ class rpg_main(commands.Cog):
                         player_detail["experience"] += exp_gain
                         player_detail["money"] += money_gain
                         await interaction.response.send_message(f"You defeated {monster}, gaining {exp_gain} experience points and {money_gain} copper coins!", ephemeral=True)
-                        common.json_write(j_stats_p, rpg_stats)
+                        util.json_write(j_stats_p, rpg_stats)
+                        rpg_stats = util.json_read(j_stats_p)
                     elif damage_status[0] <= 0:                        
                         player_detail["money"] = max(0, player_detail["money"] - 20)
                         await interaction.response.send_message("You died haha. Use `/rpg explore` to continue your adventure. \nDeducted 20 copper coins", ephemeral=True)
@@ -296,46 +292,52 @@ class rpg_main(commands.Cog):
         await interaction.followup.send(f"You encountered {monster}, do you want to fight?", view=FightView(), ephemeral=True)
 
 
-
     async def event_treasure_chest(self, interaction: discord.Interaction):
         try:
+            rpg_stats:dict = util.json_read(j_stats_p)
             content = self.generate_random_event(self.treasure_contents)
-            player_detail = common.player_detail(interaction)
-            if content == "Health Potion":
+            player_detail = util.player_detail(interaction,rpg_stats)
+            player_detail["experience"] += 50
+            if content == "health_potion":
                 heal = round(numpy.random.normal(25,5))
                 if heal < 1: heal = 1
                 elif heal > 50: heal = 50
                 heal = round(heal * util.bonus(player_detail))
-                player_detail["health"] = min(player_detail["health"] + heal, 100 + player_detail["level"] * 15)
+                player_detail["health"] = min(player_detail["health"] + heal, util.params_maximum(player_detail,"health"))
                 await interaction.followup.send(f"You obtained a Health Potion, restoring {heal} health points!", ephemeral=True)
             
-            elif content == "Weapon":
-                player_detail["attack"] = min(player_detail["attack"] * 1.1, 10 + player_detail["level"] * 2)
+            elif content == "weapon":
+                player_detail["attack"] = min(player_detail["attack"] * 1.1, util.params_maximum(player_detail,"attack"))
                 await interaction.followup.send("Your weapon has been upgraded!", ephemeral=True)
             
-            elif content == "Armor":
-                player_detail["defense"] = min (player_detail["defense"] * 1.1, 10 + player_detail["level"] * 2)
+            elif content == "armor":
+                player_detail["defense"] = min (player_detail["defense"] * 1.1, util.params_maximum(player_detail,"defense"))
                 await interaction.followup.send("Your armor has been upgraded!", ephemeral=True)
             
-            elif content == "Money":
+            elif content == "money":
                 money = round(numpy.random.normal(50,20))
                 money = round(money * util.bonus(player_detail))
                 player_detail["money"] += money
                 await interaction.followup.send(f"You obtained {money} copper coins!", ephemeral=True)
             
-            common.json_write(j_stats_p, rpg_stats)
+            util.json_write(j_stats_p, rpg_stats)
+            rpg_stats = util.json_read(j_stats_p)
         except Exception as e:
             print(e, ", chest")
 
 
 
     async def event_special_room(self, interaction: discord.Interaction):
-        await interaction.followup.send("Special room is still under development.", ephemeral=True)
+        room = self.generate_random_event(self.special_rooms)
+        if room == "merchant":
+            await merchant.event_merchant(self=merchant,interaction=interaction)
+        if room == "coach":
+            pass
 
 
     async def event_stairs(self, interaction: discord.Interaction):
         try:
-            player_detail = common.player_detail(interaction)
+            player_detail = util.player_detail(interaction,rpg_stats)
             
             class FloorDecisionView(discord.ui.View):
                 def __init__(self, interaction: discord.Interaction):
@@ -361,7 +363,6 @@ class rpg_main(commands.Cog):
             await self.event_functions[event_name](interaction)
         else:
             return "Unknown event"
-
 
 
     def generate_random_event(self, events: dict):

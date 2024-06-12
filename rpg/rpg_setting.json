@@ -7,9 +7,9 @@
         "Dragon": 0.01
     },
     "events": {
-        "monster": 0.5,
-        "treasure chest": 0.3,
-        "special_room": 0.15,
+        "monster": 0.0,
+        "treasure chest": 1,
+        "special_room": 0.3,
         "stairs": 0.05
     },
     "events_msg": {
@@ -56,10 +56,55 @@
         }
     },
     "treasure_contents": {
-        "Health Potion": 0.3,
-        "Weapon": 0.2,
-        "Armor": 0.2,
-        "Money": 0.3
+        "health_potion": 0.3,
+        "weapon": 0.2,
+        "armor": 0.2,
+        "money": 0.3
+    },
+    "special_rooms": {
+        "merchant": 1,
+        "coach": 0,
+        "dark_room": 0
+    },
+    "special_rooms_params": {
+        "merchant": {
+            "weapon": 50,
+            "armor": 50,
+            "health potion": 80,
+            "magic_potion": 100
+        },
+        "coach": {
+            "learn": 100,
+            "reinforce": 150,
+            "specialization": 500
+        },
+        "dark_room": {
+            "boss": 0.2,
+            "special_treasure_chest": 0.4,
+            "ancient_library": 0.4
+        }
+    },
+    "skills":{
+        "common":{},
+        "warrior":{
+            "slash":"",
+            "shiled":"",
+            "rampage":""
+        },
+        "mage":{
+            "fire_ball":"",
+            "frost_nova":""
+        },
+        "archer":{
+            "shot":"",
+            "precision_shot":"",
+            "poison_shot":"",
+            "fire_arrow":"",
+            "multishot":""
+        }
+    },
+    "special_rooms_details":{
+
     },
     "occupation_default_params": {
         "warrior": {
