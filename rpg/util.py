@@ -64,13 +64,11 @@ class util():
         
     def level_up(player_detail:dict)->list:#[level,experience]
         level = player_detail["level"]
-        experience = experience
+        experience = player_detail["experience"]
         while experience >= util.experience_required(level):
             # Check if the player has enough experience to level up
             experience -= util.experience_required(level)  # Deduct the required experience for the next level
             level += 1  # Increment the player's level
-            util.json_write(j_stats_p, rpg_stats)  # Update player data in the JSON file
-            rpg_stats = util.json_read(j_stats_p)
             return [level,experience]
 
 
@@ -96,7 +94,7 @@ class util():
             return default_param+level*15*bouns    
 
 
-        elif param == "magic":
+        elif param == "mana":
             if occupation == "mage":
                 bouns = 1.5
             elif occupation == "archer":

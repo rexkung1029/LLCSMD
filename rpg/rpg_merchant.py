@@ -23,16 +23,12 @@ class MerchantView(discord.ui.View):
         try:
             rpg_stats:dict = util.json_read(j_stats_p)
             if self.player_detail["money"] >= 50:
-                print("1")
                 self.player_detail["money"] -= 50
                 self.player_detail["attack"] = min(self.player_detail["attack"] * 1.1, util.params_maximum(self.player_detail, "attack"))
-                print("2")
                 rpg_stats[str(interaction.guild_id)][str(interaction.user.id)]=self.player_detail
                 util.json_write(j_stats_p, rpg_stats)
                 rpg_stats = util.json_read(j_stats_p)
-                print("3")
                 await interaction.response.send_message("Your weapon has been upgraded!", ephemeral=True)
-                print("4")
             else:
                 await interaction.response.send_message("You don't have enough money to buy a weapon.", ephemeral=True)
             await self.check_continue_shopping()
@@ -95,7 +91,7 @@ class MerchantView(discord.ui.View):
 
 
 async def event_merchant(self, interaction: discord.Interaction):
-    player_detail = util.player_detail(interaction)
+    player_detail = util.player_detail(interaction,rpg_stats)
     if not player_detail:
         await interaction.followup.send("Player detail not found.", ephemeral=True)
         return

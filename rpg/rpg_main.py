@@ -62,82 +62,42 @@ class rpg_main(commands.Cog):
             rpg_stats = util.json_read(j_stats_p)
         except Exception as e:
             print(e,", setup")
+        
         if opt == "start":
             try:
                 if str(interaction.user.id) not in rpg_stats[str(interaction.guild_id)]:
                     class OccupationSelectionView(discord.ui.View):
                         @discord.ui.button(label="Warrior", style=discord.ButtonStyle.primary)
                         async def select_warrior(self, interaction: discord.Interaction, button: discord.ui.Button):
-                            rpg_stats:dict = util.json_read(j_stats_p)
-                            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
-                                "name": interaction.user.nick or interaction.user.name,
-                                "level": 0,
-                                "inventory": {},
-                                "skills": {},
-                                "attack_skills": {},
-                                "experience": 0,
-                                "attack": 15,
-                                "defense": 15,
-                                "health": 120,
-                                "magic": 50,
-                                "agility":0,
-                                "magic_resistance": 5,
-                                "depth": 1,
-                                "money": 50,
-                                "occupation":"warrior"
-                            }
-                            util.json_write(j_stats_p, rpg_stats)
-                            rpg_stats = util.json_read(j_stats_p)
+                            self.create_character(interaction,"warrior")
                             await interaction.response.send_message("Warrior character created successfully", ephemeral=True)
 
                         @discord.ui.button(label="Mage", style=discord.ButtonStyle.primary)
                         async def select_mage(self, interaction: discord.Interaction, button: discord.ui.Button):
-                            rpg_stats:dict = util.json_read(j_stats_p)
-                            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
-                                "name": interaction.user.nick or interaction.user.name,
-                                "level": 0,
-                                "inventory": {},
-                                "skills": {},
-                                "attack_skills": {},
-                                "experience": 0,
-                                "attack": 10,
-                                "defense": 10,
-                                "health": 70,
-                                "magic": 120,
-                                "agility":0,
-                                "magic_resistance": 10,
-                                "depth": 1,
-                                "money": 50,
-                                "occupation":"mage"
-                            }
-                            util.json_write(j_stats_p, rpg_stats)
-                            rpg_stats = util.json_read(j_stats_p)
+                            self.create_character(interaction,"mage")
                             await interaction.response.send_message("Mage character created successfully", ephemeral=True)
 
                         @discord.ui.button(label="Archer", style=discord.ButtonStyle.primary)
                         async def select_archer(self, interaction: discord.Interaction, button: discord.ui.Button):
+                            self.create_character(interaction, "archer")
+                            await interaction.response.send_message("Archer character created successfully", ephemeral=True)
+                        
+                        def create_character(self, interaction:discord.Interaction, occupation:str):
+                            guild_id = str(interaction.guild_id)
+                            user_id = str(interaction.user.id)
+                            self.occupation_default_params = rpg_setting["occupation_default_params"]
+                            
                             rpg_stats:dict = util.json_read(j_stats_p)
-                            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = {
+                            rpg_stats.setdefault(guild_id, {})
+                            rpg_stats[guild_id][user_id] = {
                                 "name": interaction.user.nick or interaction.user.name,
-                                "level": 0,
-                                "inventory": {},
-                                "skills": {},
-                                "attack_skills": {},
-                                "experience": 0,
-                                "attack": 12,
-                                "defense": 10,
-                                "health": 100,
-                                "magic": 70,
-                                "agility": 20,
-                                "magic_resistance": 8,
-                                "depth": 1,
-                                "money": 50,
-                                "occupation": "archer"
+                                "occupation": occupation,
+                                **self.occupation_default_params["common"],
+                                **self.occupation_default_params[occupation]
                             }
+
                             util.json_write(j_stats_p, rpg_stats)
                             rpg_stats = util.json_read(j_stats_p)
-                            await interaction.response.send_message("Archer character created successfully", ephemeral=True)
-
                     await interaction.response.send_message("Please choose an occupation:", view=OccupationSelectionView(), ephemeral=True)
                 else:
                     await interaction.response.send_message("You already have a character", ephemeral=True)
@@ -201,7 +161,7 @@ class rpg_main(commands.Cog):
                         m = util.params_maximum(player_status,key)
                         embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False) 
 
-                    elif key == "magic":
+                    elif key == "mana":
                         m = util.params_maximum(player_status,key)
                         embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)  
 
@@ -248,10 +208,12 @@ class rpg_main(commands.Cog):
                     await interaction.response.send_message(embed=embed,ephemeral=True)
             except Exception as e:
                 print(e,", skills")
-        
-        player_detail = util.player_detail(interaction,rpg_stats)
-        [player_detail["level"],player_detail["experience"]] = util.level_up(player_detail)
-        util.json_write(j_stats_p,rpg_stats)
+        try:
+            player_detail = util.player_detail(interaction,rpg_stats)
+            [player_detail["level"],player_detail["experience"]] = util.level_up(player_detail)
+            util.json_write(j_stats_p,rpg_stats)
+            await interaction.followup.send(f"Level upped, now level: {player_detail["level"]}",ephemeral=True)
+        except Exception as e:print(e,", level up")
 
     # -----事件----------事件----------事件----------事件-----
     async def event_monster(self, interaction: discord.Interaction):
@@ -270,7 +232,7 @@ class rpg_main(commands.Cog):
                 try:
                     damage_status = rpg_main.fight(rpg_main, player_detail, monster_detail)
                     if damage_status[1] <= 0:
-                        player_detail["heealth"] = damage_status[0]
+                        player_detail["health"] = damage_status[0]
                         exp_gain = monster_detail["experience"] * util.bonus(player_detail)
                         money_gain = exp_gain * 2
                         player_detail["experience"] += exp_gain
@@ -346,7 +308,7 @@ class rpg_main(commands.Cog):
                 @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
                 async def yes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
                     player_detail["depth"] += 1
-                    player_detail["money"] += 10
+                    player_detail["money"] += 100
                     await interaction.response.send_message("You chose to go downstairs.", ephemeral=True)
 
                 @discord.ui.button(label="No", style=discord.ButtonStyle.secondary)

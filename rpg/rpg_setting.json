@@ -7,8 +7,8 @@
         "Dragon": 0.01
     },
     "events": {
-        "monster": 0.0,
-        "treasure chest": 1,
+        "monster": 0.5,
+        "treasure chest": 0.15,
         "special_room": 0.3,
         "stairs": 0.05
     },
@@ -38,7 +38,7 @@
             "defense": 20,
             "health": 80,
             "experience": 50,
-            "agility": 5
+            "agility": 10
         },
         "Werewolf": {
             "attack": 40,
@@ -52,7 +52,7 @@
             "defense": 500,
             "health": 150,
             "experience": 200,
-            "agility": 0
+            "agility": 5
         }
     },
     "treasure_contents": {
@@ -84,51 +84,106 @@
             "ancient_library": 0.4
         }
     },
-    "skills":{
-        "common":{},
-        "warrior":{
-            "slash":"",
-            "shiled":"",
-            "rampage":""
+    "skills": {
+        "common": {
+            "run":{
+                "agility":3
+            }
         },
-        "mage":{
-            "fire_ball":"",
-            "frost_nova":""
+        "warrior": {
+            "slash": {
+                "attack": 1.2,
+                "round":1
+            },
+            "shield": {
+                "attack": 0.8,
+                "defense": 1.5,
+                "magic_resistance":1.2,
+                "agility":0.3,
+                "round":2,
+                "mana":5
+            },
+            "rampage": {
+                "attack":2,
+                "defense":0.3,
+                "agility":3,
+                "round":3,
+                "mana":50
+            },
+            "sex":{
+                "money":0.8,
+                "attack":2,
+                "round":5
+            },
+            "essence_harvest":{
+                "attack":1.2,
+                "defense":0.9,
+                "agility":1.2,
+                "life_drain":5
+            },
+            "worry":"worry"
+            
         },
-        "archer":{
-            "shot":"",
-            "precision_shot":"",
-            "poison_shot":"",
-            "fire_arrow":"",
-            "multishot":""
-        }
+        "mage": {
+            "fire_ball": "",
+            "frost_nova": ""
+        },
+        "archer": {
+            "shot": "",
+            "precision_shot": "",
+            "poison_shot": "",
+            "fire_arrow": "",
+            "multishot": ""
+        },
+        "multiplier":[
+            "attack",
+            "defense",
+            "health",
+            "agility"
+        ],
+        "increment":[
+            "life_drain",
+            ""
+        ]
     },
-    "special_rooms_details":{
-
-    },
+    "special_rooms_details": {},
     "occupation_default_params": {
+        "common":{
+            "level": 0,
+            "inventory": {},
+            "skills": {},
+            "attack_skills": {},
+            "experience": 0,
+            "life_drain":0,
+            "depth": 1,
+            "money": 100
+
+        },
         "warrior": {
             "attack": 15,
             "defense": 15,
             "health": 120,
-            "magic": 50,
+            "mana": 50,
             "agility": 10,
+            "life_drain":0,
             "magic_resistance": 5
         },
         "archer": {
             "attack": 12,
             "defense": 10,
             "health": 100,
-            "magic": 70,
+            "mana": 70,
             "agility": 20,
+            "life_drain":0,
             "magic_resistance": 5
         },
         "mage": {
             "attack": 10,
             "defense": 10,
             "health": 70,
-            "magic": 150,
+            "mana": 150,
             "agility": 0,
+            "life_drain":0,
             "magic_resistance": 10
         }
     }
