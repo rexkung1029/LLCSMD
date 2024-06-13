@@ -62,8 +62,8 @@
         "money": 0.3
     },
     "special_rooms": {
-        "merchant": 1,
-        "coach": 0,
+        "merchant": 0.7,
+        "coach": 0.3,
         "dark_room": 0
     },
     "special_rooms_params": {
@@ -84,10 +84,19 @@
             "ancient_library": 0.4
         }
     },
-    "skills": {
+    "attack_skills": {
         "common": {
             "run":{
                 "agility":3
+            },
+            "weaken":{
+                "mana":15,
+                "effect":"weaken"
+            },
+            "sex":{
+                "money":0.8,
+                "attack":2,
+                "round":5
             }
         },
         "warrior": {
@@ -110,11 +119,6 @@
                 "round":3,
                 "mana":50
             },
-            "sex":{
-                "money":0.8,
-                "attack":2,
-                "round":5
-            },
             "essence_harvest":{
                 "attack":1.2,
                 "defense":0.9,
@@ -125,21 +129,52 @@
             
         },
         "mage": {
-            "fire_ball": "",
-            "frost_nova": ""
+            "fire_ball": {
+                "attack":1.2,
+                "mana":5,
+                "round":1,
+                "effect":"burn"
+            },
+            "frost_nova": {
+                "attack":0.5,
+                "effect":"frost"
+            },
+            "wall":{
+                "defense":5,
+                "mana":15
+            }            
         },
         "archer": {
-            "shot": "",
-            "precision_shot": "",
-            "poison_shot": "",
-            "fire_arrow": "",
-            "multishot": ""
+            "shot": {
+                "attack":1.2,
+                "round":1
+            },
+            "precision_shot": {
+                "attack":2,
+                "mana":5,
+                "round":1
+            },
+            "poison_shot": {
+                "attack":1,
+                "mana":10,
+                "effect":"poison"
+            },
+            "fire_arrow": {
+                "attack":1.5,
+                "mana":20,
+                "effect":"burn"
+            },
+            "multishot": {
+                "attack":2.5,
+                "mana":20
+            }
         },
         "multiplier":[
             "attack",
             "defense",
             "health",
-            "agility"
+            "agility",
+            "mana"
         ],
         "increment":[
             "life_drain",
@@ -178,13 +213,32 @@
             "magic_resistance": 5
         },
         "mage": {
-            "attack": 10,
-            "defense": 10,
+            "attack": 20,
+            "defense": 5,
             "health": 70,
             "mana": 150,
             "agility": 0,
             "life_drain":0,
             "magic_resistance": 10
+        }
+    },
+    "effect":{
+        "frost":{
+            "can_move":0,
+            "round":2   
+        },
+        "poison":{
+            "damage":8,
+            "round":2
+        },
+        "burn":{
+            "damage":10,
+            "round":2
+        },
+        "weaken":{
+            "attack":0.5,
+            "defense":0.5,
+            "round":3
         }
     }
 }

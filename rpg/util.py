@@ -3,15 +3,12 @@ import os
 import math
 import json
 import time
+import random
 
 j_stats_p = "rpg/rpg_stats.json"
 j_setting_p = "rpg/rpg_setting.json"
 
-CACHE_TIMEOUT = 5
-json_cache = {
-    "data": None,
-    "timestamp": 0
-}
+
 
 with open(j_stats_p, "r", encoding="utf8") as tmp:
     rpg_stats = json.load(tmp)
@@ -24,33 +21,24 @@ class util():
         depth = player["depth"] - 1
         return 1.0 + (depth * 0.05)
     
+
     def experience_required(level:int):
         return math.ceil(100 * (1.1 ** level))
     
+
     def json_write(path: str, file):
         try:
             with open(path, 'w', encoding='utf8') as tmp:
                 json.dump(file, tmp, indent=4, ensure_ascii=False)
-            json_cache["data"] = file
-            json_cache["timestamp"] = time.time()
-            return util.json_read(path)
         except Exception as e:
             print(e, ", json_w")
 
     
     def json_read(file_path:str):
         try:
-            global json_cache
-            current_time = time.time()
-            if json_cache["data"] is None or current_time - json_cache["timestamp"] > CACHE_TIMEOUT:
-                if os.path.exists(file_path):
-                    with open(file_path, 'r',encoding="utf8") as f:
-                        json_cache["data"] = json.load(f)
-                        json_cache["timestamp"] = current_time
-                else:
-                    json_cache["data"] = {}
-                    json_cache["timestamp"] = current_time
-            return json_cache["data"]
+            with open(file_path, 'r',encoding="utf8") as f:
+                data = json.load(f)
+            return data 
         except Exception as e:
             print(e,", jr")
 
@@ -61,16 +49,36 @@ class util():
         except Exception as e:
             print(e, ", player detail")
             return None
-        
-    def level_up(player_detail:dict)->list:#[level,experience]
+
+
+    async def level_up(interaction: discord.Interaction) -> list:  # [level, experience]
+        player_detail = util.player_detail(interaction, rpg_stats)
         level = player_detail["level"]
         experience = player_detail["experience"]
-        while experience >= util.experience_required(level):
-            # Check if the player has enough experience to level up
-            experience -= util.experience_required(level)  # Deduct the required experience for the next level
-            level += 1  # Increment the player's level
-            return [level,experience]
+        if experience >= util.experience_required(level):
+            while experience >= util.experience_required(level):
+                # Deduct the required experience for the next level
+                experience -= util.experience_required(level)
+                # Increment the player's level
+                level += 1
+                player_detail["level"] = level
+                player_detail["experience"] = experience 
+                print(level)
+                print(experience)
+            # Return the updated level and experience
+            rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = player_detail
+            util.json_write(j_stats_p, rpg_stats)
+            await interaction.followup.send(f"Level upped, now level: {level}",ephemeral=True)
 
+    def generate_random_event(events: dict):
+        rand = random.random()
+        cumulative_probability = 0.0
+
+        for event, probability in events.items():
+            cumulative_probability += probability
+            if rand < cumulative_probability:
+                return event
+        return None
 
 
     def params_maximum(player_detail:dict,param:str)->int:
@@ -113,4 +121,4 @@ class util():
                 bouns = 1.5
             elif occupation == "archer":
                 bouns = 1.1
-            return default_param+level*2*bouns
+            return default_param+level*0.2*bouns

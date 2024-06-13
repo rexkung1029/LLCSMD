@@ -91,6 +91,7 @@ class MerchantView(discord.ui.View):
 
 
 async def event_merchant(self, interaction: discord.Interaction):
+    rpg_stats = util.json_read(j_stats_p)
     player_detail = util.player_detail(interaction,rpg_stats)
     if not player_detail:
         await interaction.followup.send("Player detail not found.", ephemeral=True)
