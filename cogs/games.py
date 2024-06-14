@@ -116,7 +116,8 @@ class TwoAOneB(commands.Cog):
 
     @app_commands.command(name="1a2b_ans")
     async def _1a2b_ans(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"答案是:{self.active_games[interaction.user.id]["answer"]}")
+        answer = self.active_games[interaction.user.id]["answer"]
+        await interaction.response.send_message(f"答案是:{answer}")
         del self.active_games[interaction.user.id]
 
     @app_commands.command()

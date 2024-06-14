@@ -20,7 +20,7 @@ class Youtube(commands.Cog):
         self.youtube_watch_url = self.youtube_base_url + 'watch?v='
         self.yt_dl_options = {"format": "bestaudio/best"}
         self.ytdl = yt_dlp.YoutubeDL(self.yt_dl_options)
-        self.ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn -filter:a "volume=0.25"'}
+        self.ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn -filter:a "volume=0.15"'}
 
         self.check_voice_channel.start()
 
