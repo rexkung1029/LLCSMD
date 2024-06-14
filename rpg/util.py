@@ -10,11 +10,7 @@ j_setting_p = "rpg/rpg_setting.json"
 
 
 
-with open(j_stats_p, "r", encoding="utf8") as tmp:
-    rpg_stats = json.load(tmp)
 
-with open(j_setting_p, "r", encoding="utf8") as tmp:
-    rpg_setting = json.load(tmp)
 
 class util():
     def bonus(player: dict):
@@ -43,16 +39,27 @@ class util():
             print(e,", jr")
 
 
-    def player_detail(interaction:discord.Interaction,rpg_stats) -> dict:
+    def player_detail(interaction:discord.Interaction) -> dict:
         try:
+            rpg_stats = util.json_read(j_stats_p)
             return rpg_stats[str(interaction.guild_id)][str(interaction.user.id)]
+        except Exception as e:
+            print(e, ", player detail")
+            return None
+        
+
+    def monster_detail(monster) -> dict:
+        try:
+            rpg_setting = util.json_read(j_setting_p)
+            return rpg_setting["monsters_params"][monster]
         except Exception as e:
             print(e, ", player detail")
             return None
 
 
     async def level_up(interaction: discord.Interaction) -> list:  # [level, experience]
-        player_detail = util.player_detail(interaction, rpg_stats)
+        rpg_stats = util.json_read(j_stats_p)
+        player_detail = util.player_detail(interaction)
         level = player_detail["level"]
         experience = player_detail["experience"]
         if experience >= util.experience_required(level):
@@ -70,6 +77,7 @@ class util():
             util.json_write(j_stats_p, rpg_stats)
             await interaction.followup.send(f"Level upped, now level: {level}",ephemeral=True)
 
+
     def generate_random_event(events: dict):
         rand = random.random()
         cumulative_probability = 0.0
@@ -82,6 +90,7 @@ class util():
 
 
     def params_maximum(player_detail:dict,param:str)->int:
+        rpg_setting = util.json_read(j_setting_p)
         level = player_detail["level"]
         occupation = player_detail["occupation"]
         default_param = rpg_setting["occupation_default_params"][occupation][param]
@@ -122,3 +131,79 @@ class util():
             elif occupation == "archer":
                 bouns = 1.1
             return default_param+level*0.2*bouns
+
+
+    def get_inventory(interaction:discord.Interaction)->dict:
+        return util.player_detail(interaction)["inventory"]
+    
+    def inventory_update(interaction:discord.Interaction,inventory:dict):
+        rpg_stats = util.json_read(j_stats_p)
+        rpg_stats[str(interaction.guild_id)][str(interaction.user.id)]["inventory"] = inventory
+        util.json_write(j_stats_p,rpg_stats)
+        return
+
+    def player_detail_update(interaction:discord.Interaction,player_detail:dict):
+        rpg_stats = util.json_read(j_stats_p)
+        rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = player_detail
+        util.json_write(j_stats_p,rpg_stats)
+        return
+
+    class item_use():
+        def use(interaction: discord.Interaction,item:str):
+            if item == "weapon_upgrade" : util.item_use.weapon(interaction)
+            if item == "armor_upgrade": util.item_use.armor(interaction)
+            if item == "health_potion": util.item_use.health_potion(interaction)
+            if item == "mana_potion": util.item_use.mana_potion(interaction)
+
+
+        def weapon(interaction):
+            player_detail = util.player_detail(interaction)
+            player_detail["attack"] += 3 * util.bonus(player_detail)
+            util.player_detail_update(interaction,player_detail)
+            return
+
+        def armor(interaction):
+            player_detail = util.player_detail(interaction)
+            player_detail["defense"] += 3 * util.bonus(player_detail)
+            util.player_detail_update(interaction,player_detail)
+            return
+
+        def health_potion(interaction):
+            player_detail = util.player_detail(interaction)
+            player_detail["health"] += 30 * util.bonus(player_detail)
+            util.player_detail_update(interaction,player_detail)
+            return
+
+        def mana_potion(interaction):
+            player_detail = util.player_detail(interaction)
+            player_detail["mana"] += 30 * util.bonus(player_detail)
+            util.player_detail_update(interaction,player_detail)
+            return
+        
+    class fight():
+        def phsycal_damage_caculate(attack:float,defense:float) -> float:
+            return max(math.log(attack,defense),attack-defense)
+        
+    class skill():
+        def attack_skill_params(detail:dict,attack_skill:dict):
+            """
+            [detail,round]
+            """
+            skill_params:dict = util.json_read(j_setting_p)["attack_skills"]
+            round = attack_skill.get(["round"],1)
+            del attack_skill["round"]
+            for name, para in attack_skill:
+                if name in skill_params["multiplier"]:
+                    detail[name] *= para
+                
+                elif name in skill_params["increment"]:
+                    detail[name] += para
+
+                elif name in skill_params["deduct"]:
+                    detail[name] -= para
+                
+                else :
+                    print("unknown skill")
+                    print(name)
+
+            return [detail,round]

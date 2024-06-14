@@ -4,11 +4,11 @@ from rpg.util import util
 
 j_stats_p = "rpg/rpg_stats.json"
 j_setting_p = "rpg/rpg_setting.json"
+player_detail = {}
 
 async def status(interaction: discord.Interaction):
     try:
-        rpg_stats = util.json_read(j_stats_p)
-        player_detail = util.player_detail(interaction,rpg_stats)
+        player_detail = util.player_detail(interaction)
         player_status = player_detail.copy()
         del player_status["inventory"]
         del player_status["skills"]
@@ -51,3 +51,4 @@ async def status(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed, ephemeral=True)
     except Exception as e:
         print(e,", status")
+

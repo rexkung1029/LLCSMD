@@ -41,9 +41,9 @@
             "agility": 10
         },
         "Werewolf": {
-            "attack": 40,
+            "attack": 50,
             "defense": 10,
-            "health": 40,
+            "health": 60,
             "experience": 100,
             "agility": 20
         },
@@ -173,15 +173,28 @@
             "attack",
             "defense",
             "health",
-            "agility",
-            "mana"
+            "agility"
         ],
         "increment":[
-            "life_drain",
-            ""
+            "life_drain"
+        ],
+        "deduct":[
+            "mana"
+        ],
+        "buff":[],
+        "give_effect":[
+            "poison",
+            "weaken",
+            "burn",
+            "frost"
+        ],
+        "get_effect":[
+            "worry"
         ]
     },
-    "special_rooms_details": {},
+    "special_rooms_details": {
+
+    },
     "occupation_default_params": {
         "common":{
             "level": 0,
@@ -239,6 +252,9 @@
             "attack":0.5,
             "defense":0.5,
             "round":3
+        },
+        "worry":{
+            
         }
     }
 }

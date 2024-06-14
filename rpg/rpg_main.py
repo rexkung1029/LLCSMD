@@ -52,7 +52,8 @@ class rpg_main(commands.Cog):
             Choice(name="View Inventory", value="inventory"),
             Choice(name="View Status",value="status"),
             Choice(name="VIew Attack Skills", value="attack_skills"),
-            Choice(name="VIew Skills", value="skills")
+            Choice(name="VIew Skills", value="skills"),
+            Choice(name="Use item", value="use")
         ]
     )
     async def rpg(self, interaction: discord.Interaction, opt: str = "explore"):
@@ -112,7 +113,7 @@ class rpg_main(commands.Cog):
                 if str(interaction.user.id) not in rpg_stats[str(interaction.guild_id)]:
                     await interaction.response.send_message("You don't have a character.")
                     return
-                player_detail = util.player_detail(interaction,rpg_stats)
+                player_detail = util.player_detail(interaction)
             except Exception as e:
                 print(e,",rpg")
 
@@ -132,7 +133,7 @@ class rpg_main(commands.Cog):
         elif opt == "attack_skills":
             try:
                 rpg_stats = util.json_read(j_stats_p)
-                player_detail = util.player_detail(interaction,rpg_stats)
+                player_detail = util.player_detail(interaction)
                 attack_skills = player_detail["attack_skills"]
                 embed = discord.Embed(title="Player Attack Skills", color=discord.Color.blue())
                 if attack_skills is None:
@@ -146,7 +147,7 @@ class rpg_main(commands.Cog):
 
         elif opt == "skills":
             try:
-                player_detail = util.player_detail(interaction,rpg_stats)
+                player_detail = util.player_detail(interaction)
                 skills = player_detail["skills"]
                 embed = discord.Embed(title="Player Skills", color=discord.Color.blue())
                 if skills is None:
@@ -158,13 +159,16 @@ class rpg_main(commands.Cog):
             except Exception as e:
                 print(e,", skills")
         
+        elif opt == "use":
+            await item.use_item(item,interaction)
+
         await util.level_up(interaction)        
 
     async def event_treasure_chest(self, interaction: discord.Interaction):
         try:
             rpg_stats:dict = util.json_read(j_stats_p)
             content = util.generate_random_event(self.treasure_contents)
-            player_detail = util.player_detail(interaction,rpg_stats)
+            player_detail = util.player_detail(interaction)
             player_detail["experience"] += 50
             if content == "health_potion":
                 player_detail["inventory"]["health_potion"] = player_detail["inventory"].get("health_potion", 0) + 1
@@ -184,7 +188,7 @@ class rpg_main(commands.Cog):
                 player_detail["money"] += money
                 await interaction.followup.send(f"You obtained {money} copper coins!", ephemeral=True)
             
-            util.json_write(j_stats_p, rpg_stats)
+            util.player_detail_update(interaction,player_detail)
             rpg_stats = util.json_read(j_stats_p)
         except Exception as e:
             print(e, ", chest")
@@ -194,15 +198,14 @@ class rpg_main(commands.Cog):
     async def event_special_room(self, interaction: discord.Interaction):
         room = util.generate_random_event(self.special_rooms)
         if room == "merchant":
-            await merchant.event_merchant(self=merchant,interaction=interaction)
+            await merchant.event_merchant(interaction=interaction)
         if room == "coach":
             pass
 
 
     async def event_stairs(self, interaction: discord.Interaction):
         try:
-            rpg_stats = util.json_read(j_stats_p)
-            player_detail = util.player_detail(interaction,rpg_stats)
+            player_detail = util.player_detail(interaction)
             
             class FloorDecisionView(discord.ui.View):
                 def __init__(self, interaction: discord.Interaction):
@@ -212,8 +215,7 @@ class rpg_main(commands.Cog):
                 async def yes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
                     player_detail["depth"] += 1
                     player_detail["money"] += 100
-                    rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = player_detail
-                    util.json_write(j_stats_p,rpg_stats)
+                    util.player_detail_update(interaction,player_detail)
                     await interaction.response.send_message("You chose to go downstairs.", ephemeral=True)
 
                 @discord.ui.button(label="No", style=discord.ButtonStyle.secondary)
