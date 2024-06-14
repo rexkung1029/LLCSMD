@@ -18,9 +18,6 @@ async def on_ready():
     try:
         with open('setting.json','w',encoding='utf8') as tmp:
             json.dump(jdata,tmp,indent=4,ensure_ascii=False)
-        print("setting money")
-        await Money(bot).initialize_money_records()
-
         print("syncing...")
         await bot.tree.sync()
         print(">>Bot is online<<")
@@ -63,6 +60,12 @@ async def reload(ctx:commands.Context, extension):
     await bot.reload_extension(f"cogs.{extension}")
     await ctx.send(f"ReLoaded {extension} done.")
 
+@bot.hybrid_command()
+@commands.is_owner()
+async def reload_rpg(ctx:commands.Context):
+    await bot.reload_extension("rpg.rpg_main")
+    await ctx.send("Reload RPG done.")
+
 
 @bot.hybrid_command()   
 @commands.is_owner()  
@@ -77,6 +80,8 @@ async def load_extensions():
         elif filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
             print(f"cogs.{filename[:-3]} loaded")
+    await bot.load_extension("rpg.rpg_main")
+    print("rpg.rpg_main loaded")
 
 async def main():
     async with bot:

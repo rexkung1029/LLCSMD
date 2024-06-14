@@ -4,7 +4,6 @@ import os
 import random
 import math
 
-from cogs.money import Money
 from discord import app_commands
 from discord.ext import commands
 
@@ -13,8 +12,6 @@ with open("setting.json","r",encoding="utf8") as s:
 
 active_games = {}
 
-def money_guild(guild:discord.Guild):
-    return(f"{str(guild.id)},{guild.name}")
 
 def json_write(path:str, file):
     try:
@@ -103,8 +100,6 @@ class TwoAOneB(commands.Cog):
             # Check for win or loss conditions
             if a == game_instance["length"] and b == 0:
                 await interaction.channel.send("恭喜！你猜對了數字！")
-                money = round(1000*pow(game_instance["attempts_left"]+1,math.log(game_instance["length"])))
-                Money.money_add(Money,money,interaction.guild,interaction.user.id)
                 del self.active_games[user_id]  # Remove game from active games
     
             elif game_instance["attempts_left"] == 0:
@@ -146,8 +141,6 @@ class TwoAOneB(commands.Cog):
 
         if len(set(answer)) == length:
             return "".join(str(x) for x in answer)  # Convert digits to string
-
-
 
 
 async def setup(bot: commands.Bot):

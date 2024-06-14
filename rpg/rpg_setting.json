@@ -1,0 +1,260 @@
+{
+    "monsters": {
+        "Goblin": 0.49,
+        "Troll": 0.25,
+        "Ogre": 0.2,
+        "Werewolf": 0.1,
+        "Dragon": 0.01
+    },
+    "events": {
+        "monster": 0.5,
+        "treasure chest": 0.15,
+        "special_room": 0.3,
+        "stairs": 0.05
+    },
+    "events_msg": {
+        "monster": "You encountered a monster!",
+        "treasure chest": "You found a treasure chest!",
+        "special_room": "You encountered a special room!",
+        "stairs": "You found stairs leading to the next floor!"
+    },
+    "monsters_params": {
+        "Goblin": {
+            "attack": 10,
+            "defense": 5,
+            "health": 20,
+            "experience": 15,
+            "agility": 30
+        },
+        "Troll": {
+            "attack": 20,
+            "defense": 15,
+            "health": 50,
+            "experience": 30,
+            "agility": 5
+        },
+        "Ogre": {
+            "attack": 30,
+            "defense": 20,
+            "health": 80,
+            "experience": 50,
+            "agility": 10
+        },
+        "Werewolf": {
+            "attack": 50,
+            "defense": 10,
+            "health": 60,
+            "experience": 100,
+            "agility": 20
+        },
+        "Dragon": {
+            "attack": 100,
+            "defense": 500,
+            "health": 150,
+            "experience": 200,
+            "agility": 5
+        }
+    },
+    "treasure_contents": {
+        "health_potion": 0.3,
+        "weapon": 0.2,
+        "armor": 0.2,
+        "money": 0.3
+    },
+    "special_rooms": {
+        "merchant": 0.7,
+        "coach": 0.3,
+        "dark_room": 0
+    },
+    "special_rooms_params": {
+        "merchant": {
+            "weapon": 50,
+            "armor": 50,
+            "health potion": 80,
+            "magic_potion": 100
+        },
+        "coach": {
+            "learn": 100,
+            "reinforce": 150,
+            "specialization": 500
+        },
+        "dark_room": {
+            "boss": 0.2,
+            "special_treasure_chest": 0.4,
+            "ancient_library": 0.4
+        }
+    },
+    "attack_skills": {
+        "common": {
+            "run":{
+                "agility":3
+            },
+            "weaken":{
+                "mana":15,
+                "effect":"weaken"
+            },
+            "sex":{
+                "money":0.8,
+                "attack":2,
+                "round":5
+            }
+        },
+        "warrior": {
+            "slash": {
+                "attack": 1.2,
+                "round":1
+            },
+            "shield": {
+                "attack": 0.8,
+                "defense": 1.5,
+                "magic_resistance":1.2,
+                "agility":0.3,
+                "round":2,
+                "mana":5
+            },
+            "rampage": {
+                "attack":2,
+                "defense":0.3,
+                "agility":3,
+                "round":3,
+                "mana":50
+            },
+            "essence_harvest":{
+                "attack":1.2,
+                "defense":0.9,
+                "agility":1.2,
+                "life_drain":5
+            },
+            "worry":"worry"
+            
+        },
+        "mage": {
+            "fire_ball": {
+                "attack":1.2,
+                "mana":5,
+                "round":1,
+                "effect":"burn"
+            },
+            "frost_nova": {
+                "attack":0.5,
+                "effect":"frost"
+            },
+            "wall":{
+                "defense":5,
+                "mana":15
+            }            
+        },
+        "archer": {
+            "shot": {
+                "attack":1.2,
+                "round":1
+            },
+            "precision_shot": {
+                "attack":2,
+                "mana":5,
+                "round":1
+            },
+            "poison_shot": {
+                "attack":1,
+                "mana":10,
+                "effect":"poison"
+            },
+            "fire_arrow": {
+                "attack":1.5,
+                "mana":20,
+                "effect":"burn"
+            },
+            "multishot": {
+                "attack":2.5,
+                "mana":20
+            }
+        },
+        "multiplier":[
+            "attack",
+            "defense",
+            "health",
+            "agility"
+        ],
+        "increment":[
+            "life_drain"
+        ],
+        "deduct":[
+            "mana"
+        ],
+        "buff":[],
+        "give_effect":[
+            "poison",
+            "weaken",
+            "burn",
+            "frost"
+        ],
+        "get_effect":[
+            "worry"
+        ]
+    },
+    "special_rooms_details": {
+
+    },
+    "occupation_default_params": {
+        "common":{
+            "level": 0,
+            "inventory": {},
+            "skills": {},
+            "attack_skills": {},
+            "experience": 0,
+            "life_drain":0,
+            "depth": 1,
+            "money": 100
+
+        },
+        "warrior": {
+            "attack": 15,
+            "defense": 15,
+            "health": 120,
+            "mana": 50,
+            "agility": 10,
+            "life_drain":0,
+            "magic_resistance": 5
+        },
+        "archer": {
+            "attack": 12,
+            "defense": 10,
+            "health": 100,
+            "mana": 70,
+            "agility": 20,
+            "life_drain":0,
+            "magic_resistance": 5
+        },
+        "mage": {
+            "attack": 20,
+            "defense": 5,
+            "health": 70,
+            "mana": 150,
+            "agility": 0,
+            "life_drain":0,
+            "magic_resistance": 10
+        }
+    },
+    "effect":{
+        "frost":{
+            "can_move":0,
+            "round":2   
+        },
+        "poison":{
+            "damage":8,
+            "round":2
+        },
+        "burn":{
+            "damage":10,
+            "round":2
+        },
+        "weaken":{
+            "attack":0.5,
+            "defense":0.5,
+            "round":3
+        },
+        "worry":{
+            
+        }
+    }
+}
