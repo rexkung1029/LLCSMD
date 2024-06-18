@@ -3,8 +3,9 @@ import math
 import json
 import random
 
-j_stats_p = "rpg/rpg_stats.json"
-j_setting_p = "rpg/rpg_setting.json"
+j_rpg_stats_p = "rpg/rpg_stats.json"
+j_rpg_setting_p = "rpg/rpg_setting.json"
+j_arangement_p = "arangement.json"
 
 
 
@@ -30,7 +31,7 @@ class util():
     class rpg():
         def player_detail(interaction:discord.Interaction) -> dict:
             try:
-                rpg_stats = util.json_read(j_stats_p)
+                rpg_stats = util.json_read(j_rpg_stats_p)
                 return rpg_stats[str(interaction.guild_id)][str(interaction.user.id)]
             except Exception as e:
                 print(e, ", player detail")
@@ -39,7 +40,7 @@ class util():
 
         def monster_detail(monster) -> dict:
             try:
-                rpg_setting = util.json_read(j_setting_p)
+                rpg_setting = util.json_read(j_rpg_setting_p)
                 return rpg_setting["monsters_params"][monster]
             except Exception as e:
                 print(e, ", player detail")
@@ -54,7 +55,7 @@ class util():
             return math.ceil(100 * (1.1 ** level))
 
         async def level_up(interaction: discord.Interaction) -> list:  # [level, experience]
-            rpg_stats = util.json_read(j_stats_p)
+            rpg_stats = util.json_read(j_rpg_stats_p)
             player_detail = util.rpg.player_detail(interaction)
             level = player_detail["level"]
             experience = player_detail["experience"]
@@ -70,7 +71,7 @@ class util():
                     print(experience)
                 # Return the updated level and experience
                 rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = player_detail
-                util.json_write(j_stats_p, rpg_stats)
+                util.json_write(j_rpg_stats_p, rpg_stats)
                 await interaction.followup.send(f"Level upped, now level: {level}",ephemeral=True)
 
 
@@ -86,7 +87,7 @@ class util():
 
 
         def params_maximum(player_detail:dict,param:str)->int:
-            rpg_setting = util.json_read(j_setting_p)
+            rpg_setting = util.json_read(j_rpg_setting_p)
             level = player_detail["level"]
             occupation = player_detail["occupation"]
             default_param = rpg_setting["occupation_default_params"][occupation][param]
@@ -133,15 +134,15 @@ class util():
             return util.rpg.player_detail(interaction)["inventory"]
     
         def inventory_update(interaction:discord.Interaction,inventory:dict):
-            rpg_stats = util.json_read(j_stats_p)
+            rpg_stats = util.json_read(j_rpg_stats_p)
             rpg_stats[str(interaction.guild_id)][str(interaction.user.id)]["inventory"] = inventory
-            util.json_write(j_stats_p,rpg_stats)
+            util.json_write(j_rpg_stats_p,rpg_stats)
             return
 
         def player_detail_update(interaction:discord.Interaction,player_detail:dict):
-            rpg_stats = util.json_read(j_stats_p)
+            rpg_stats = util.json_read(j_rpg_stats_p)
             rpg_stats[str(interaction.guild_id)][str(interaction.user.id)] = player_detail
-            util.json_write(j_stats_p,rpg_stats)
+            util.json_write(j_rpg_stats_p,rpg_stats)
             return
 
         class item_use():
@@ -185,7 +186,7 @@ class util():
                 """
                 [detail,round]
                 """
-                skill_params:dict = util.json_read(j_setting_p)["attack_skills"]
+                skill_params:dict = util.json_read(j_rpg_setting_p)["attack_skills"]
                 round = attack_skill.get(["round"],1)
                 del attack_skill["round"]
                 for name, para in attack_skill:
@@ -203,3 +204,16 @@ class util():
                         print(name)
 
                 return [detail,round]
+
+    class moderation():
+        def get_warn(member: discord.Member)->int:
+            warns = util.json_read(j_arangement_p)["warn"][str(member.guild.id)][str(member.id)]
+            if warns:
+                return warns
+            else :
+                return None
+        
+        def set_warn(member:discord.Member,times:int):
+            arangement = util.json_read(j_arangement_p)
+            arangement["warn"][str(member.guild.id)][str(member.id)] += times
+            util.json_write(j_arangement_p,arangement)

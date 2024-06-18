@@ -1,7 +1,5 @@
 import json,asyncio,discord,os
 
-from cogs.money import *
-from cogs.youtube import *
 from discord.ext import commands
 from discord import app_commands
 
@@ -40,7 +38,7 @@ async def sync(ctx:commands.Context):
 )
 async def load(ctx:commands.Context, extension:str):
     await bot.load_extension(f"cogs.{extension}")
-    await ctx.send(f"Loaded {extension} done.")
+    await ctx.send(f"Loaded {extension} done.",ephemeral=True)
 
 @bot.hybrid_command()
 @commands.is_owner()
@@ -49,7 +47,7 @@ async def load(ctx:commands.Context, extension:str):
 )
 async def unload(ctx:commands.Context, extension):
     await bot.unload_extension(f"cogs.{extension}")
-    await ctx.send(f"UnLoaded {extension} done.")
+    await ctx.send(f"UnLoaded {extension} done.",ephemeral=True)
 
 @bot.hybrid_command()
 @commands.is_owner()
@@ -58,19 +56,19 @@ async def unload(ctx:commands.Context, extension):
 )
 async def reload(ctx:commands.Context, extension):
     await bot.reload_extension(f"cogs.{extension}")
-    await ctx.send(f"ReLoaded {extension} done.")
+    await ctx.send(f"ReLoaded {extension} done.",ephemeral=True)
 
 @bot.hybrid_command()
 @commands.is_owner()
 async def reload_rpg(ctx:commands.Context):
     await bot.reload_extension("rpg.rpg_main")
-    await ctx.send("Reload RPG done.")
+    await ctx.send("Reload RPG done.",ephemeral=True)
 
 
 @bot.hybrid_command()   
 @commands.is_owner()  
-async def shutdown(ctx):
-    await ctx.send("機器人將關閉。")
+async def shutdown(ctx:commands.Context):
+    await ctx.send("機器人將關閉。",ephemeral=True)
     await bot.close()
 
 async def load_extensions():
