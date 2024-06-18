@@ -1,6 +1,6 @@
 import discord
 
-from rpg.util import util
+from util import util
 
 j_stats_p = "rpg/rpg_stats.json"
 j_setting_p = "rpg/rpg_setting.json"
@@ -8,7 +8,7 @@ player_detail = {}
 
 async def status(interaction: discord.Interaction):
     try:
-        player_detail = util.player_detail(interaction)
+        player_detail = util.rpg.player_detail(interaction)
         player_status = player_detail.copy()
         del player_status["inventory"]
         del player_status["skills"]
@@ -18,31 +18,31 @@ async def status(interaction: discord.Interaction):
 
         for key, value in player_status.items():
             if key == "experience":
-                m = util.experience_required(player_detail["level"])
+                m = util.rpg.experience_required(player_detail["level"])
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}({round((int(value)/m)*100)}%)", inline=False)
             
             elif key == "attack":
-                m = util.params_maximum(player_status,key)
+                m = util.rpg.params_maximum(player_status,key)
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
 
             elif key == "defense" :
-                m = util.params_maximum(player_status,key)
+                m = util.rpg.params_maximum(player_status,key)
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
 
             elif key == "health":
-                m = util.params_maximum(player_status,key)
+                m = util.rpg.params_maximum(player_status,key)
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False) 
 
             elif key == "mana":
-                m = util.params_maximum(player_status,key)
+                m = util.rpg.params_maximum(player_status,key)
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)  
 
             elif key == "agility":
-                m = util.params_maximum(player_status,key)
+                m = util.rpg.params_maximum(player_status,key)
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
 
             elif key == "magic_resistance": 
-                m = util.params_maximum(player_status,key)
+                m = util.rpg.params_maximum(player_status,key)
                 embed.add_field(name=key.capitalize(), value=f"{value}/{m}", inline=False)
 
             else:

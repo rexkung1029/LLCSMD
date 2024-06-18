@@ -6,20 +6,12 @@ import math
 
 from discord import app_commands
 from discord.ext import commands
+from util import util
 
 with open("setting.json","r",encoding="utf8") as s:
     j_setting = json.load(s)
 
 active_games = {}
-
-
-def json_write(path:str, file):
-    try:
-        with open(path,'w',encoding='utf8') as tmp:
-            json.dump(file, tmp, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(e,", json_w")
-
     
 
 class TwoAOneB(commands.Cog):

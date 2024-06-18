@@ -3,7 +3,7 @@ import math
 import random
 import json
 
-from rpg.util import util
+from util import util
 
 j_stats_p = "rpg/rpg_stats.json"    
 j_setting_p = "rpg/rpg_setting.json"
@@ -23,24 +23,24 @@ class fight():
 
     async def battle(self, interaction:discord.Interaction, monster: str) -> bool:  # [player left hp, monster left hp]
         try:
-            player_detail = util.player_detail(interaction)
-            monster_detail = util.monster_detail(monster)
-            player_hp, monster_hp = player_detail["health"], monster_detail["health"] * util.bonus(player_detail)
+            player_detail = util.rpg.player_detail(interaction)
+            monster_detail = util.rpg.monster_detail(monster)
+            player_hp, monster_hp = player_detail["health"], monster_detail["health"] * util.rpg.bonus(player_detail)
             player_attack = player_detail["attack"]
-            monster_attack = monster_detail["attack"] * util.bonus(player_detail)
+            monster_attack = monster_detail["attack"] * util.rpg.bonus(player_detail)
             player_defend = player_detail["defense"]
-            monster_defend = monster_detail["defense"] * util.bonus(player_detail)
-            monster_experience = monster_detail["experience"]  * util.bonus(player_detail)
+            monster_defend = monster_detail["defense"] * util.rpg.bonus(player_detail)
+            monster_experience = monster_detail["experience"]  * util.rpg.bonus(player_detail)
 
             while True:
                 # Calculate damage to monster
-                monster_hp -= util.fight.phsycal_damage_caculate(player_attack,monster_defend)
+                monster_hp -= util.rpg.fight.phsycal_damage_caculate(player_attack,monster_defend)
                 if monster_hp <= 0:
                     if_player_win = True
                     break
 
                 # Calculate damage to player
-                player_hp -= util.fight.phsycal_damage_caculate(monster_attack,player_defend)
+                player_hp -= util.rpg.fight.phsycal_damage_caculate(monster_attack,player_defend)
                 if player_hp <= 0:
                     if_player_win = False
                     break
@@ -58,7 +58,7 @@ class fight():
 
     async def event_monster(self, interaction: discord.Interaction):
         print("1")
-        monster = util.generate_random_event(rpg_setting["monsters"])
+        monster = util.rpg.generate_random_event(rpg_setting["monsters"])
 
         view = fight_or_run(interaction=interaction, monster=monster)
         embed = view.create_monster_embed()
@@ -70,9 +70,9 @@ class fight_or_run(discord.ui.View):
     def __init__(self,interaction:discord.Interaction, monster:str):
         super().__init__()
         self.monster = monster
-        self.player_detail = util.player_detail(interaction)
-        self.monster_detail = util.monster_detail(monster)
-        self.monster_agility = self.monster_detail["agility"] * util.bonus(self.player_detail)
+        self.player_detail = util.rpg.player_detail(interaction)
+        self.monster_detail = util.rpg.monster_detail(monster)
+        self.monster_agility = self.monster_detail["agility"] * util.rpg.bonus(self.player_detail)
         self.player_agility = self.player_detail["agility"]
         self.prob_of_battle = abs(self.player_agility-self.monster_agility) * 2 /max(self.player_agility,self.monster_agility)
 

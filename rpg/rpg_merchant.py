@@ -1,7 +1,7 @@
 import discord
 import json
 
-from rpg.util import util
+from util import util
 
 j_stats_p = "rpg/rpg_stats.json"
 j_setting_p = "rpg/rpg_setting.json"
@@ -18,7 +18,7 @@ class MerchantView(discord.ui.View):
             if self.player_detail["money"] >= 50:
                 self.player_detail["money"] -= 50
                 self.player_detail["inventory"]["weapon_upgrade"] = self.player_detail["inventory"].get("weapon_upgrade", 0) + 1
-                util.player_detail_update(interaction,self.player_detail)
+                util.rpg.player_detail_update(interaction,self.player_detail)
                 await interaction.response.send_message("You bought a weapon upgrade!", ephemeral=True)
             else:
                 await interaction.response.send_message("You don't have enough money to buy a weapon upgrade.", ephemeral=True)
@@ -31,7 +31,7 @@ class MerchantView(discord.ui.View):
         if self.player_detail["money"] >= 50:
             self.player_detail["money"] -= 50
             self.player_detail["inventory"]["armor_upgrade"] = self.player_detail["inventory"].get("armor_upgrade", 0) + 1
-            util.player_detail_update(interaction,self.player_detail)
+            util.rpg.player_detail_update(interaction,self.player_detail)
             await interaction.response.send_message("You bought an armor upgrade!", ephemeral=True)
         else:
             await interaction.response.send_message("You don't have enough money to buy armor upgrade.", ephemeral=True)
@@ -42,7 +42,7 @@ class MerchantView(discord.ui.View):
         if self.player_detail["money"] >= 80:
             self.player_detail["money"] -= 80
             self.player_detail["inventory"]["health_potion"] = self.player_detail["inventory"].get("health_potion", 0) + 1
-            util.player_detail_update(interaction,self.player_detail)
+            util.rpg.player_detail_update(interaction,self.player_detail)
             await interaction.response.send_message("You bought a health potion!", ephemeral=True)
         else:
             await interaction.response.send_message("You don't have enough money to buy a health potion.", ephemeral=True)
@@ -53,7 +53,7 @@ class MerchantView(discord.ui.View):
         if self.player_detail["money"] >= 100:
             self.player_detail["money"] -= 100
             self.player_detail["inventory"]["magic_potion"] = self.player_detail["inventory"].get("magic_potion", 0) + 1
-            util.player_detail_update(interaction,self.player_detail)
+            util.rpg.player_detail_update(interaction,self.player_detail)
             await interaction.response.send_message("You bought a magic potion!", ephemeral=True)
         else:
             await interaction.response.send_message("You don't have enough money to buy a magic potion.", ephemeral=True)
@@ -73,7 +73,7 @@ class MerchantView(discord.ui.View):
 
 
 async def event_merchant(interaction: discord.Interaction):
-    player_detail = util.player_detail(interaction)
+    player_detail = util.rpg.player_detail(interaction)
     if not player_detail:
         await interaction.followup.send("Player detail not found.", ephemeral=True)
         return
