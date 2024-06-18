@@ -1,14 +1,16 @@
-import json,asyncio,discord,os
+import asyncio
+import discord
+import json
+import os
 
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 with open('setting.json','r',encoding='utf8') as jfile:
     jdata = json.load(jfile)
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = ("!","0","?"),intents=intents)
-
 
 
 @bot.event
@@ -31,6 +33,7 @@ async def sync(ctx:commands.Context):
     await bot.tree.sync()
     await ctx.channel.send("Synced")
 
+
 @bot.hybrid_command()
 @commands.is_owner()
 @app_commands.choices(
@@ -39,6 +42,7 @@ async def sync(ctx:commands.Context):
 async def load(ctx:commands.Context, extension:str):
     await bot.load_extension(f"cogs.{extension}")
     await ctx.send(f"Loaded {extension} done.",ephemeral=True)
+
 
 @bot.hybrid_command()
 @commands.is_owner()
@@ -49,6 +53,7 @@ async def unload(ctx:commands.Context, extension):
     await bot.unload_extension(f"cogs.{extension}")
     await ctx.send(f"UnLoaded {extension} done.",ephemeral=True)
 
+
 @bot.hybrid_command()
 @commands.is_owner()
 @app_commands.choices(
@@ -58,10 +63,11 @@ async def reload(ctx:commands.Context, extension):
     await bot.reload_extension(f"cogs.{extension}")
     await ctx.send(f"ReLoaded {extension} done.",ephemeral=True)
 
+
 @bot.hybrid_command()
 @commands.is_owner()
 async def reload_rpg(ctx:commands.Context):
-    await bot.reload_extension("rpg.rpg_main")
+    await bot.reload_extension("Rpg.rpg_main")
     await ctx.send("Reload RPG done.",ephemeral=True)
 
 
@@ -71,6 +77,7 @@ async def shutdown(ctx:commands.Context):
     await ctx.send("機器人將關閉。",ephemeral=True)
     await bot.close()
 
+
 async def load_extensions():
     for filename in os.listdir("./cogs"):
         if filename.startswith("-"):
@@ -78,8 +85,9 @@ async def load_extensions():
         elif filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
             print(f"cogs.{filename[:-3]} loaded")
-    await bot.load_extension("rpg.rpg_main")
-    print("rpg.rpg_main loaded")
+    await bot.load_extension("Rpg.rpg_main")
+    print("Rpg.rpg_main loaded")
+
 
 async def main():
     async with bot:
