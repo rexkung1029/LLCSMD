@@ -1,13 +1,12 @@
-import asyncio
+import discord
 import re
+import asyncio
+import yt_dlp
 import time
 import urllib.parse
 import urllib.request
 
-import discord
-import yt_dlp
 from discord.ext import commands, tasks
-
 
 class Youtube(commands.Cog):
     
@@ -40,7 +39,7 @@ class Youtube(commands.Cog):
             if "www.youtube.com" not in link:
                 return
 
-            if ctx.guild.id not in self.voice_clients or not self.voice_clients[ctx.guild.id]["client"].is_connected():
+            if not ctx.guild.id in self.voice_clients or not self.voice_clients[ctx.guild.id]["client"].is_connected():
                 voice_client = await ctx.author.voice.channel.connect()
                 self.voice_clients[ctx.guild.id] = {"client": voice_client}
                 print("start playing")
@@ -80,10 +79,10 @@ class Youtube(commands.Cog):
             while self.voice_clients[ctx.guild.id]["client"].is_playing():
                 elapsed_time = int(time.time() - self.voice_clients[ctx.guild.id]["start_time"])
 
-                elapsed_formatted = self.format_time(self=Youtube,seconds=elapsed_time)
-                duration_formatted = self.format_time(self=Youtube,seconds=duration)
+                elapsed_formatted = self.format_time(elapsed_time)
+                duration_formatted = self.format_time(duration)
 
-                progress_bar = self.generate_progress_bar(self=Youtube,elapsed=elapsed_time, total=duration, length=20)
+                progress_bar = self.generate_progress_bar(elapsed_time, duration, length=20)
 
                 embed.description = f"播放中...\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
                 await embed_msg.edit(embed=embed)
@@ -92,12 +91,10 @@ class Youtube(commands.Cog):
         except Exception as e:
             print(e, "play2")
 
-    @staticmethod
     def format_time(self, seconds):
         mins, secs = divmod(seconds, 60)
         return f"{mins}:{secs:02}"
 
-    @staticmethod
     def generate_progress_bar(self, elapsed, total, length=20):
         progress = elapsed / total
         num_ticks = round(length * progress)
@@ -139,10 +136,10 @@ class Youtube(commands.Cog):
         try:
             elapsed_time = int(time.time() - self.voice_clients[ctx.guild.id]["start_time"])
 
-            elapsed_formatted = self.format_time(self=Youtube,seconds=elapsed_time)
-            duration_formatted = self.format_time(self=Youtube,seconds=self.voice_clients[ctx.guild.id]["duration"])
+            elapsed_formatted = self.format_time(elapsed_time)
+            duration_formatted = self.format_time(self.voice_clients[ctx.guild.id]["duration"])
 
-            progress_bar = self.generate_progress_bar(self=Youtube,elapsed= elapsed_time, total=self.voice_clients[ctx.guild.id]["duration"], length=20)
+            progress_bar = self.generate_progress_bar(elapsed_time, self.voice_clients[ctx.guild.id]["duration"], length=20)
 
             self.voice_clients[ctx.guild.id]["embed"].description = f"已暫停\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
             await self.voice_clients[ctx.guild.id]["embed_msg"].edit(embed=self.voice_clients[ctx.guild.id]["embed"])
@@ -157,9 +154,9 @@ class Youtube(commands.Cog):
             self.voice_clients[ctx.guild.id]["client"].resume()
             while self.voice_clients[ctx.guild.id].is_playing():
                 elapsed_time = int(time.time() - self.start_time)
-                elapsed_formatted = self.format_time(self=Youtube,seconds=elapsed_time)
-                duration_formatted = self.format_time(self=Youtube,seconds=self.duration)
-                progress_bar = self.generate_progress_bar(self=Youtube, elapsed=elapsed_time, total= self.duration, length=20)
+                elapsed_formatted = self.format_time(elapsed_time)
+                duration_formatted = self.format_time(self.duration)
+                progress_bar = self.generate_progress_bar(elapsed_time, self.duration, length=20)
                 self.embed.description = f"播放中...\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
                 await self.embed_msg.edit(embed=self.embed)
                 await asyncio.sleep(2)
@@ -266,7 +263,7 @@ class Youtube(commands.Cog):
 
         patterns = [
             r'v=([a-zA-Z0-9_-]{11})',       # Pattern for 'v='
-            r'youtu\.be/([a-zA-Z0-9_-]{11})'  # Pattern for 'youtu.be/'
+            r'youtu\.be/([a-zA-Z0-9_-]{11})' # Pattern for 'youtu.be/'
         ]
         for pattern in patterns:
             match = re.search(pattern, url)
@@ -275,6 +272,7 @@ class Youtube(commands.Cog):
                 url = self.youtube_watch_url + match.group(1)
                 return url
         return url
+
 
 
 async def setup(bot: commands.Bot):

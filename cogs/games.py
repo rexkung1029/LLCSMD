@@ -1,9 +1,12 @@
-import json
-import random
-
 import discord
+import json
+import os
+import random
+import math
+
 from discord import app_commands
 from discord.ext import commands
+from util import util
 
 with open("setting.json","r",encoding="utf8") as s:
     j_setting = json.load(s)
@@ -34,7 +37,7 @@ class TwoAOneB(commands.Cog):
                 return
 
             # Generate the target number
-            target_number = str(lself.generate_answer(self=TwoAOneB,length=length))
+            target_number = str(self.generate_answer(length))
             print(target_number)
             # Initialize the game instance with relevant data
             game_instance = {
@@ -53,6 +56,7 @@ class TwoAOneB(commands.Cog):
             await interaction.response.send_message(f"我生成了一個 {length} 位數 (沒有重複數字)。猜猜這個數字吧！")
         except Exception as e:
             print(e,",2a1b")
+
 
     @app_commands.command()
     async def guess(self, interaction: discord.Interaction, guess: str):
@@ -114,11 +118,11 @@ class TwoAOneB(commands.Cog):
             answer = game_instance["answer"] 
             if guess[i] == answer[i]:
                 a += 1
-            elif guess[i] in answer:
+            elif guess[i] in  answer:
                 b += 1
         return a, b
 
-    @staticmethod
+    
     def generate_answer(self, length: int):
         nums = list(range(10))  # Create a list containing digits 0-9
         answer = []

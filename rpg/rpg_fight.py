@@ -1,43 +1,46 @@
-import json
-import random
-
 import discord
+import math
+import random
+import json
 
-from util import Util
+from util import util
 
-j_stats_p = "Rpg/rpg_stats.json"
-j_setting_p = "Rpg/rpg_setting.json"
+j_stats_p = "rpg/rpg_stats.json"    
+j_setting_p = "rpg/rpg_setting.json"
 
+rpg_setting = {}
+rpg_stats={}
 
 with open(j_setting_p, "r", encoding="utf8") as tmp:
     rpg_setting = json.load(tmp)
 
+with open(j_stats_p, "r", encoding="utf8") as tmp:
+    rpg_stats = json.load(tmp)
 
-class Fight:
+class fight():
     def __init__(self):
         pass
 
-    @staticmethod
     async def battle(self, interaction:discord.Interaction, monster: str) -> bool:  # [player left hp, monster left hp]
         try:
-            player_detail = Util.Rpg.player_detail(interaction)
-            monster_detail = Util.Rpg.monster_detail(monster)
-            player_hp, monster_hp = player_detail["health"], monster_detail["health"] * Util.Rpg.bonus(player_detail)
+            player_detail = util.rpg.player_detail(interaction)
+            monster_detail = util.rpg.monster_detail(monster)
+            player_hp, monster_hp = player_detail["health"], monster_detail["health"] * util.rpg.bonus(player_detail)
             player_attack = player_detail["attack"]
-            monster_attack = monster_detail["attack"] * Util.Rpg.bonus(player_detail)
+            monster_attack = monster_detail["attack"] * util.rpg.bonus(player_detail)
             player_defend = player_detail["defense"]
-            monster_defend = monster_detail["defense"] * Util.Rpg.bonus(player_detail)
-            monster_experience = monster_detail["experience"] * Util.Rpg.bonus(player_detail)
+            monster_defend = monster_detail["defense"] * util.rpg.bonus(player_detail)
+            monster_experience = monster_detail["experience"]  * util.rpg.bonus(player_detail)
 
             while True:
                 # Calculate damage to monster
-                monster_hp -= Util.Rpg.Fight.phsycal_damage_caculate(player_attack, monster_defend)
+                monster_hp -= util.rpg.fight.phsycal_damage_caculate(player_attack,monster_defend)
                 if monster_hp <= 0:
                     if_player_win = True
                     break
 
                 # Calculate damage to player
-                player_hp -= Util.Rpg.Fight.phsycal_damage_caculate(monster_attack, player_defend)
+                player_hp -= util.rpg.fight.phsycal_damage_caculate(monster_attack,player_defend)
                 if player_hp <= 0:
                     if_player_win = False
                     break
@@ -45,33 +48,33 @@ class Fight:
             if if_player_win:
                 await interaction.response.send_message(f"You defeated {monster}, gaining {monster_experience} experience points and {2 * monster_experience} copper coins!")
             
-            else:
+            else :
                 await interaction.response.send_message(
-                    "You died haha. Use /Rpg explore to continue your adventure.\n" +
+                    "You died haha. Use /rpg explore to continue your adventure.\n"+
                     "Deducted 20 copper coins")
         except Exception as e:
-            print(e,", Fight")
+            print(e,", fight")
 
-    @staticmethod
+
     async def event_monster(self, interaction: discord.Interaction):
         print("1")
-        monster = Util.Rpg.generate_random_event(rpg_setting["monsters"])
+        monster = util.rpg.generate_random_event(rpg_setting["monsters"])
 
-        view = FightOrRun(interaction=interaction, monster=monster)
+        view = fight_or_run(interaction=interaction, monster=monster)
         embed = view.create_monster_embed()
 
-        await interaction.followup.send(f"You encountered {monster}, do you want to Fight?", embed=embed, view=view)
+        await interaction.followup.send(f"You encountered {monster}, do you want to fight?", embed=embed, view=view)
 
 
-class FightOrRun(discord.ui.View):
+class fight_or_run(discord.ui.View):
     def __init__(self,interaction:discord.Interaction, monster:str):
         super().__init__()
         self.monster = monster
-        self.player_detail = Util.Rpg.player_detail(interaction)
-        self.monster_detail = Util.Rpg.monster_detail(monster)
-        self.monster_agility = self.monster_detail["agility"] * Util.Rpg.bonus(self.player_detail)
+        self.player_detail = util.rpg.player_detail(interaction)
+        self.monster_detail = util.rpg.monster_detail(monster)
+        self.monster_agility = self.monster_detail["agility"] * util.rpg.bonus(self.player_detail)
         self.player_agility = self.player_detail["agility"]
-        self.prob_of_battle = abs(self.player_agility-self.monster_agility) * 2 / max(self.player_agility,self.monster_agility)
+        self.prob_of_battle = abs(self.player_agility-self.monster_agility) * 2 /max(self.player_agility,self.monster_agility)
 
     def create_monster_embed(self):
         embed = discord.Embed(title=f"Encounter: {self.monster}", description="What will you do?", color=discord.Color.red())
@@ -83,17 +86,18 @@ class FightOrRun(discord.ui.View):
         return embed
 
     @discord.ui.button(label="Fight", style=discord.ButtonStyle.danger)
-    async def fight_button(self, interaction: discord.Interaction):
+    async def fight_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
             await fight.battle(fight, interaction, self.monster)
             
         except Exception as e:
-            print(e, " ,Fight button")
+            print(e, " ,fight button")
 
     @discord.ui.button(label="Run", style=discord.ButtonStyle.secondary)
-    async def run_button(self, interaction: discord.Interaction):
+    async def run_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         
         try:
+            self.monster_agility 
             if self.player_agility > 2 * self.monster_agility or self.monster_agility <= 0:
                 await interaction.response.send_message("You successfully escaped!", ephemeral=True)
             elif self.monster_agility > 2 * self.player_agility or self.player_agility <= 0:
@@ -106,3 +110,4 @@ class FightOrRun(discord.ui.View):
                     await interaction.response.send_message("You successfully escaped!", ephemeral=True)
         except Exception as e:
             print(e,", run")
+
