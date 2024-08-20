@@ -19,7 +19,7 @@ class Youtube(commands.Cog):
         self.youtube_watch_url = self.youtube_base_url + 'watch?v='
         self.yt_dl_options = {"format": "bestaudio/best"}
         self.ytdl = yt_dlp.YoutubeDL(self.yt_dl_options)
-        self.ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn -filter:a "volume=0.15"'}
+        self.ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn -filter:a "volume=1"'}
 
         self.check_voice_channel.start()
 
@@ -134,34 +134,49 @@ class Youtube(commands.Cog):
     @commands.command(name="pause")
     async def pause(self, ctx):
         try:
-            elapsed_time = int(time.time() - self.voice_clients[ctx.guild.id]["start_time"])
+            guild_id = ctx.guild.id
 
+            # 計算已播放時間
+            elapsed_time = int(time.time() - self.voice_clients[guild_id]["start_time"])
             elapsed_formatted = self.format_time(elapsed_time)
-            duration_formatted = self.format_time(self.voice_clients[ctx.guild.id]["duration"])
+            duration_formatted = self.format_time(self.voice_clients[guild_id]["duration"])
 
-            progress_bar = self.generate_progress_bar(elapsed_time, self.voice_clients[ctx.guild.id]["duration"], length=20)
+            # 生成進度條
+            progress_bar = self.generate_progress_bar(elapsed_time, self.voice_clients[guild_id]["duration"], length=20)
 
-            self.voice_clients[ctx.guild.id]["embed"].description = f"已暫停\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
-            await self.voice_clients[ctx.guild.id]["embed_msg"].edit(embed=self.voice_clients[ctx.guild.id]["embed"])
+            # 更新嵌入消息
+            self.voice_clients[guild_id]["embed"].description = f"已暫停\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
+            await self.voice_clients[guild_id]["embed_msg"].edit(embed=self.voice_clients[guild_id]["embed"])
 
-            self.voice_clients[ctx.guild.id]["client"].pause()
+            # 暫停音樂
+            self.voice_clients[guild_id]["client"].pause()
+
         except Exception as e:
-            print(e)
+            print(e, "pause")
+            await ctx.send("無法暫停音樂。請稍後再試。")
 
     @commands.command(name="resume", aliases=["r"])
-    async def resume(self, ctx):
+    async def resume(self, ctx:commands.Context):
         try:
             self.voice_clients[ctx.guild.id]["client"].resume()
-            while self.voice_clients[ctx.guild.id].is_playing():
-                elapsed_time = int(time.time() - self.start_time)
+            while self.voice_clients[ctx.guild.id]["client"].is_playing():
+                
+                embed:discord.Embed = self.voice_clients[ctx.guild.id]["embed"]
+                embed_msg = self.voice_clients[ctx.guild.id]["embed_msg"]
+                start_time = self.voice_clients[ctx.guild.id]["start_time"]
+                duration = self.voice_clients[ctx.guild.id]["duration"]
+                
+                elapsed_time = int(time.time() - start_time)
                 elapsed_formatted = self.format_time(elapsed_time)
-                duration_formatted = self.format_time(self.duration)
-                progress_bar = self.generate_progress_bar(elapsed_time, self.duration, length=20)
-                self.embed.description = f"播放中...\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
-                await self.embed_msg.edit(embed=self.embed)
+                duration_formatted = self.format_time(duration)
+                progress_bar = self.generate_progress_bar(elapsed_time, duration, length=20)
+                embed.description = f"播放中...\n{progress_bar} {elapsed_formatted}/{duration_formatted}"
+                
+                await embed_msg.edit(embed=embed)
                 await asyncio.sleep(2)
+
         except Exception as e:
-            print(e)
+            print(e,"resume")
 
     @commands.command(name="stop")
     async def stop(self, ctx:commands.Context):
@@ -176,10 +191,10 @@ class Youtube(commands.Cog):
             await self.voice_clients[ctx.guild.id]["client"].disconnect()
             del self.voice_clients[ctx.guild.id]
         except Exception as e:
-            print(e)
+            print(e,"stop")
 
     @commands.command(name="queue", aliases=["q"])
-    async def queue(self, ctx, *, url):
+    async def queue(self, ctx:commands.Context, *, url):
         try:
             url = self.url_format(url=url)
             if "list" in url:
@@ -225,10 +240,8 @@ class Youtube(commands.Cog):
     async def skip(self, ctx: commands.Context):
         try:
             if ctx.author.voice:
-                if ctx.voice_client.is_playing():
-                    ctx.voice_client.stop()
-                    await asyncio.sleep(1)
-                    await self.play_next(ctx)
+                if self.voice_clients[ctx.guild.id]["client"].is_playing():
+                    self.voice_clients[ctx.guild.id]["client"].stop()
                 else:
                     await ctx.send("沒有正在播放的歌曲")
             else:
@@ -237,7 +250,7 @@ class Youtube(commands.Cog):
             print(e, ", skip")
 
     @commands.command(name="remove_from_queue", aliases=["rfq"])
-    async def remove_from_queue(self, ctx, index: int):
+    async def remove_from_queue(self, ctx: commands.Context, index: int):
         try:
             if ctx.guild.id not in self.queues or not self.queues[ctx.guild.id]:
                 await ctx.send("佇列中沒有歌曲。")
@@ -255,22 +268,33 @@ class Youtube(commands.Cog):
             print(e, ", remove_from_queue")
 
     def url_format(self,url):
-        if self.youtube_base_url not in url:
+
+        if '&list=' in url:
+        
+            url = url.split('&list=')[0]
+
+
+        if "youtu.be" in url:
+            print("2")
+            # Pattern for 'youtu.be/'
+            pattern = r'youtu\.be/([a-zA-Z0-9_-]{11})'
+            
+            # Extract the video ID using the regex pattern
+            match = re.search(pattern, url)
+            if match:
+                video_id = match.group(1)
+                print(f"獲取ID: {video_id}")
+                full_url = self.youtube_watch_url + video_id
+                return full_url
+        
+        elif self.youtube_base_url not in url:
+            print("1")
             query_string = urllib.parse.urlencode({'search_query': url})
             content = urllib.request.urlopen(self.youtube_results_url + query_string)
             search_results = re.findall(r'/watch\?v=(.{11})', content.read().decode())
             url = self.youtube_watch_url + search_results[0]
+        
 
-        patterns = [
-            r'v=([a-zA-Z0-9_-]{11})',       # Pattern for 'v='
-            r'youtu\.be/([a-zA-Z0-9_-]{11})' # Pattern for 'youtu.be/'
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, url)
-            if match:
-                print(f"獲取ID:{match.group(1)}")
-                url = self.youtube_watch_url + match.group(1)
-                return url
         return url
 
 
